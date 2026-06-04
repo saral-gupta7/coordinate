@@ -1,6 +1,8 @@
-def main():
-    print("Hello from backend!")
+from fastapi import FastAPI, Response
+
+app = FastAPI(title="Coordinate Backend")
 
 
-if __name__ == "__main__":
-    main()
+@app.get("/")
+def health_check():
+    return {"status": "ok", "service": "coordinate api"}

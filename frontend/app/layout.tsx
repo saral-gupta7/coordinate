@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "sonner";
 
 const publicSans = Public_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -18,8 +19,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Coordinate",
-  description: "An agentic Learning Experience",
+  title: "Coordinate | Adaptive AI Learning Workspace",
+  description:
+    "Create personalized AI-generated courses, study lessons, take quizzes, chat with a course-aware tutor, and learn from your own documents.",
+  openGraph: {
+    type: "website",
+    url: "coordinate.srlgpta.xyz",
+    title: "Coordinate",
+    description:
+      "Create personalized AI-generated courses, study lessons, take quizzes, chat with a course-aware tutor, and learn from your own documents.",
+    siteName: "Coordinate",
+    images: [
+      {
+        url: "https://i.pinimg.com/736x/3f/69/92/3f69928d7c7cf17f3061d560ad5e5f9f.jpg",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -43,6 +58,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

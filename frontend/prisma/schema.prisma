@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../lib/generated/prisma"
@@ -23,6 +22,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  courses       Course[]
 
   @@unique([email])
   @@map("user")
@@ -74,4 +74,77 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  DRAFT
+  GENERATING
+  COMPLETED
+  FAILED
+}
+
+enum ChapterStatus {
+  PLANNED
+  GENERATING
+  READY
+  FAILED
+  COMPLETED
+}
+
+model Course {
+  id                 String          @id @default(cuid())
+  userId             String
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title              String
+  description        String          @db.Text
+  goal               String?         @db.Text
+  learningMode       String?
+  preferredStyle     String?
+  weeklyCommitment   Int?
+  finalProject       String?         @db.Text
+  learningObjectives Json?
+  assessmentPlan     Json?
+  prerequisites      Json?
+  status             CourseStatus    @default(DRAFT)
+  progress           Int             @default(0)
+  imageUrl           String?
+  experienceLevel    ExperienceLevel @default(BEGINNER)
+  plannerAgentRunId  String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  chapters           Chapter[]
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+}
+
+model Chapter {
+  id                String        @id @default(cuid())
+  courseId          String
+  course            Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title             String
+  description       String
+  content           String?       @db.Text
+  quizJson          Json?
+  citationsJson     Json?
+  resourcesJson     Json?
+  projectTask       String?       @db.Text
+  status            ChapterStatus @default(PLANNED)
+  videoUrl          String?
+  estimatedDuration Int?
+  learningOutcomes  Json?
+  order             Int
+  isCompleted       Boolean       @default(false)
+  lessonAgentRunId  String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@unique([courseId, order])
+  @@index([courseId])
 }
