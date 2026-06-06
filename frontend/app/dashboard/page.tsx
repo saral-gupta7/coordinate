@@ -40,7 +40,7 @@ import { authClient } from "@/lib/auth-client";
 export default function DashboardPage() {
   const reduceMotion = useReducedMotion();
 
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
 
   return (
     <main className="min-h-svh overflow-hidden bg-[#07080a] text-[#f4f1ea] selection:bg-[#7887ff] selection:text-white">
