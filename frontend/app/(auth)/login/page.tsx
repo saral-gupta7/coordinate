@@ -27,7 +27,7 @@ const LoginPage = () => {
         provider,
         fetchOptions: {
           onSuccess: () => {
-            router.push("/dashboard");
+            router.replace("/dashboard");
             toast.success("Signed in. Redirecting...");
           },
           onError: ({ error }) => {

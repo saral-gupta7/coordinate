@@ -4,6 +4,7 @@ import { getSession } from "./lib/session";
 export default async function proxy(request: NextRequest) {
   const session = await getSession(request);
   const isLoginPage = request.nextUrl.pathname === "/login";
+  const isCreatePage = request.nextUrl.pathname === "/create";
 
   if (isLoginPage && session) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -13,9 +14,13 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
+  if (isCreatePage && !session) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/login", "/create"],
 };

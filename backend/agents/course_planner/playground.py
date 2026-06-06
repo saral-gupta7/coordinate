@@ -14,4 +14,4 @@ request = CoursePlanRequest(
 
 result = course_planner_graph.invoke({"request": request, "trace": []})
 
-print(result["validated_topic"], result["trace"])
+print(result["course_blueprint"])

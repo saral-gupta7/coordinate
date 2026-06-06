@@ -64,3 +64,18 @@ class CoursePlanResponse(BaseModel):
     status: CourseCompletedStatus
     course: CourseBlueprint | None
     trace: list[AgentTraceStep]
+
+
+class TopicValidationResult(BaseModel):
+    is_valid: bool
+    refined_topic: str
+    reason: str
+
+
+class LearnerProfile(BaseModel):
+    level: ExperienceLevel
+    goal_summary: str
+    style_summary: str
+    time_budget_summary: str
+    learning_mode: str
+    planning_notes: list[str]

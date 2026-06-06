@@ -35,14 +35,12 @@ import {
   transition,
 } from "@/lib/constants/dashboard.constants";
 import SignOut from "@/components/sign-out";
-import { getSession } from "@/lib/session";
 import { authClient } from "@/lib/auth-client";
 
 export default function DashboardPage() {
   const reduceMotion = useReducedMotion();
 
   const { data: session, isPending } = authClient.useSession();
-  // const session = await getSession();
 
   return (
     <main className="min-h-svh overflow-hidden bg-[#07080a] text-[#f4f1ea] selection:bg-[#7887ff] selection:text-white">
@@ -115,7 +113,7 @@ export default function DashboardPage() {
                 >
                   <AvatarImage
                     alt="Signed-in user profile image"
-                    src={session?.user.image}
+                    src={session?.user.image ?? undefined}
                   />
                   <AvatarFallback className="bg-[#14161d] text-[#d8d2ca]">
                     AF
@@ -168,7 +166,7 @@ export default function DashboardPage() {
               <Avatar className="size-9 border border-[#7887ff]/35">
                 <AvatarImage
                   alt="Signed-in user profile image"
-                  src={session?.user.image}
+                  src={session?.user.image ?? undefined}
                 />
                 <AvatarFallback className="bg-[#14161d] text-[#d8d2ca]">
                   AF

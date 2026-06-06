@@ -1,6 +1,9 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
+from routes.agents import router as agent_router
 
 app = FastAPI(title="Coordinate Backend")
+
+app.include_router(agent_router)
 
 
 @app.get("/")

@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Dashboard",
   description: "Welcome to your dashboard!",
 };
+
 export default function DashboardLayout({
   children,
 }: Readonly<{
