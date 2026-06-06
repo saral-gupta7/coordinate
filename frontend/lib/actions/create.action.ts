@@ -11,7 +11,7 @@ export async function createCoursePlanAction(input: CreateCourseInput) {
   if (!parsed.success) {
     return {
       ok: false,
-      error: " Invalid course creation!",
+      error: "Invalid course creation!",
       issues: parsed.error,
     };
   }
