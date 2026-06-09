@@ -8,7 +8,7 @@ app = FastAPI(title="Coordinate Backend")
 
 cors_origins = os.getenv(
     "BACKEND_CORS_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000",
+    "http://localhost:3000,http://127.0.0.1:3000,https://coordinate.srlgpta.xyz",
 )
 origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
 
