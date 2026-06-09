@@ -1,29 +1,9 @@
-'use server';
-
-import { ExperienceLevel } from '@prisma/client';
-import { headers } from 'next/headers';
-
-import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import type { CoursePlanResponse } from '@/lib/schemas/course.schema';
-import {
-  CreateCourseInput,
-  createCourseSchema,
-} from '@/lib/schemas/course.schema';
-
-type CreateCoursePlanActionResult =
-  | {
-      ok: true;
-      data: CoursePlanResponse & {
-        courseId: string;
-      };
-    }
-  | {
-      ok: false;
-      error: string;
-      issues?: unknown;
-      data?: CoursePlanResponse;
-    };
+import { createCourseSchema } from '@/lib/schemas/course.schema';
+import { getSession } from '@/lib/session';
+import { ExperienceLevel } from '@prisma/client';
+import { NextRequest, NextResponse } from 'next/server';
 
 function toPrismaExperienceLevel(
   level: 'beginner' | 'intermediate' | 'advanced',
@@ -38,61 +18,57 @@ function toPrismaExperienceLevel(
   }
 }
 
-export async function createCoursePlanAction(
-  input: CreateCourseInput,
-): Promise<CreateCoursePlanActionResult> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+export async function POST(request: NextRequest) {
+  const session = await getSession(request);
 
   if (!session?.user?.id) {
-    return {
-      ok: false,
-      error: 'Unauthorized.',
-    };
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const parsed = createCourseSchema.safeParse(input);
+  const body = await request.json();
+  const parsed = createCourseSchema.safeParse(body);
 
   if (!parsed.success) {
-    return {
-      ok: false,
-      error: 'Invalid course creation.',
-      issues: parsed.error.flatten(),
-    };
+    return NextResponse.json(
+      {
+        error: 'Invalid course request.',
+        issues: parsed.error.flatten(),
+      },
+      { status: 422 },
+    );
   }
 
   const fastApiBaseUrl =
     process.env.FASTAPI_BASE_URL ?? 'http://127.0.0.1:8000';
+
   const internalToken = process.env.FASTAPI_INTERNAL_TOKEN ?? 'local-dev-token';
 
-  const response = await fetch(`${fastApiBaseUrl}/internal/agents/course-plan`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${internalToken}`,
-      'X-User-Id': session.user.id,
-      'X-User-Email': session.user.email ?? '',
+  const response = await fetch(
+    `${fastApiBaseUrl}/internal/agents/course-plan`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${internalToken}`,
+        'X-User-Id': session.user.id,
+        'X-User-Email': session.user.email ?? '',
+      },
+      body: JSON.stringify(parsed.data),
     },
-    body: JSON.stringify(parsed.data),
-  });
+  );
 
   const data = (await response.json()) as CoursePlanResponse;
 
   if (!response.ok) {
-    return {
-      ok: false,
-      error: 'Course planner failed.',
-      data,
-    };
+    return NextResponse.json(data, {
+      status: response.status,
+    });
   }
 
   if (data.status !== 'completed' || !data.course) {
-    return {
-      ok: false,
-      error: 'Course planner did not return a completed course.',
-      data,
-    };
+    return NextResponse.json(data, {
+      status: 500,
+    });
   }
 
   const savedCourse = await prisma.course.create({
@@ -122,13 +98,19 @@ export async function createCoursePlanAction(
         })),
       },
     },
+    include: {
+      chapters: {
+        orderBy: {
+          order: 'asc',
+        },
+      },
+    },
   });
 
-  return {
-    ok: true,
-    data: {
-      ...data,
-      courseId: savedCourse.id,
-    },
-  };
+  return NextResponse.json({
+    courseId: savedCourse.id,
+    agentRunId: data.agent_run_id,
+    course: savedCourse,
+    trace: data.trace,
+  });
 }
