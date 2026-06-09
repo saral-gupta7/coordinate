@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import {
   experienceOptions,
   agentPreview,
@@ -13,12 +13,6 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
-  BookOpenText,
-  CheckCircle2,
-  CircleAlert,
-  Clock3,
-  GraduationCap,
-  ListChecks,
   Loader2,
   Radio,
   Sparkles,
@@ -28,15 +22,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type {
-  CoursePlanResponse,
-  CreateCourseInput,
-} from "@/lib/schemas/course.schema";
+import type { CreateCourseInput } from "@/lib/schemas/course.schema";
 import { createCoursePlanAction } from "@/lib/actions/create.action";
 
 export default function CreateCoursePage() {
-  const reduceMotion = useReducedMotion();
-  const [result, setResult] = useState<CoursePlanResponse | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -55,8 +45,6 @@ export default function CreateCoursePage() {
   });
 
   const onSubmit = async (values: CreateCourseInput) => {
-    setResult(null);
-
     const actionResult = await createCoursePlanAction({
       ...values,
       weekly_commitment: Number(values.weekly_commitment),
@@ -68,7 +56,9 @@ export default function CreateCoursePage() {
       });
       return;
     }
-    setResult(actionResult.data);
+
+    router.push("/dashboard");
+    router.refresh();
   };
 
   return (
@@ -325,95 +315,6 @@ export default function CreateCoursePage() {
             </div>
           </motion.form>
 
-          {result && (
-            <motion.section
-              animate={{ opacity: 1, y: 0 }}
-              className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]"
-              initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="border border-white/10 bg-white/[0.025] p-5 sm:p-6">
-                <div className="mb-5 flex items-center gap-2 text-sm text-[#c7c1b9]">
-                  <BookOpenText className="size-4 text-[#8f9aff]" />
-                  Course blueprint
-                </div>
-                <h2 className="text-2xl font-semibold leading-tight">
-                  {result.course?.title}
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-[#9d968e]">
-                  {result.course?.description}
-                </p>
-
-                <div className="mt-6 grid gap-3">
-                  {result.course?.chapters.map((chapter) => (
-                    <article
-                      className="border border-white/10 bg-black/20 p-4"
-                      key={chapter.order}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="font-mono text-xs text-[#8f9aff]">
-                            Chapter {chapter.order}
-                          </p>
-                          <h3 className="mt-2 text-base font-medium text-[#f4f1ea]">
-                            {chapter.title}
-                          </h3>
-                        </div>
-                        <span className="flex items-center gap-1 font-mono text-xs text-[#77716a]">
-                          <Clock3 className="size-3.5" />
-                          {chapter.estimated_duration}m
-                        </span>
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-[#8f8981]">
-                        {chapter.description}
-                      </p>
-                    </article>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid gap-5">
-                <div className="border border-white/10 bg-white/[0.025] p-5 sm:p-6">
-                  <div className="mb-5 flex items-center gap-2 text-sm text-[#c7c1b9]">
-                    <ListChecks className="size-4 text-[#8f9aff]" />
-                    Agent trace
-                  </div>
-                  <div className="space-y-3">
-                    {result.trace.map((step) => (
-                      <div
-                        className="grid grid-cols-[32px_1fr_auto] items-center gap-3"
-                        key={`${step.order}-${step.node_name}`}
-                      >
-                        <span className="flex size-8 items-center justify-center border border-white/10 font-mono text-xs text-[#77716a]">
-                          {step.order}
-                        </span>
-                        <div className="border border-white/10 bg-black/20 px-4 py-3">
-                          <p className="text-sm font-medium text-[#f4f1ea]">
-                            {step.node_name.replaceAll("_", " ")}
-                          </p>
-                          <p className="mt-1 text-xs leading-5 text-[#8f8981]">
-                            {step.summary}
-                          </p>
-                        </div>
-                        {step.status === "completed" ? (
-                          <CheckCircle2 className="size-4 text-[#8f9aff]" />
-                        ) : (
-                          <CircleAlert className="size-4 text-[#d58b6a]" />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border border-white/10 bg-[#6f7dff] p-5 text-white sm:p-6">
-                  <GraduationCap className="size-5" />
-                  <h2 className="mt-16 text-2xl font-semibold leading-tight">
-                    {result.course?.final_project}
-                  </h2>
-                </div>
-              </div>
-            </motion.section>
-          )}
         </motion.div>
       </section>
     </main>
