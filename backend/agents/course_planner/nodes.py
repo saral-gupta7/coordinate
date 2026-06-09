@@ -4,6 +4,9 @@ from .schemas import (
     TopicValidationResult,
     LearnerProfile,
     CourseBlueprint,
+    CurriculumReviewResult,
+    CoursePlanResponse,
+    CourseCompletedStatus,
 )
 from .trace import append_trace
 
@@ -106,7 +109,7 @@ def plan_curriculum_node(state: CoursePlannerState) -> dict:
 
     Course Title: {topic}
     Goal: {request.goal}
-    Experience Level: {request.experience_level}
+    Experience Level: {request.experience_level.value}
     Learning Mode: {request.learning_mode}
     Preferred Style: {request.preferred_style}
     Weekly Commitment: {request.weekly_commitment}
@@ -132,4 +135,70 @@ def plan_curriculum_node(state: CoursePlannerState) -> dict:
             status=AgentStepStatus.COMPLETED,
             summary=f"Planned {len(result.chapters)} chapters.",
         ),
+    }
+
+
+def review_curriculum_node(state: CoursePlannerState) -> dict:
+    request = state["request"]
+    course_blueprint = state["course_blueprint"]
+    learner_profile = state["learner_profile"]
+
+    prompt = f"""
+      You are reviewing a generated course blueprint before it is saved.
+
+      Learner goal: {request.goal}
+      Experience level: {request.experience_level.value}
+      Preferred style: {request.preferred_style}
+      Weekly commitment: {request.weekly_commitment}
+      Learning mode: {request.learning_mode}
+
+      Learner profile:
+      {learner_profile.model_dump()}
+
+      Course blueprint:
+      {course_blueprint.model_dump()}
+
+      Review whether this course is coherent, realistic, level-appropriate,
+      well-sequenced, and aligned with the learner's goal.
+
+      Return a strict review result.
+    """
+
+    structured_llm = llm.with_structured_output(CurriculumReviewResult)
+    result = structured_llm.invoke(prompt)
+
+    return {
+        "curriculum_review": result,
+        "review_passed": result.passed,
+        "review_notes": result.revision_notes,
+        "trace": append_trace(
+            order=5,
+            state=state,
+            node_name="review_curriculum",
+            status=AgentStepStatus.COMPLETED,
+            summary=f"Review score: {result.score}/10. Passed: {result.passed}.",
+        ),
+    }
+
+
+def prepare_response_node(state: CoursePlannerState) -> dict:
+    course_blueprint = state["course_blueprint"]
+    agent_run_id = state["agent_run_id"]
+
+    updated_trace = append_trace(
+        order=6,
+        state=state,
+        node_name="prepare_response",
+        status=AgentStepStatus.COMPLETED,
+        summary="Prepared the final course plan response.",
+    )
+
+    return {
+        "final_response": CoursePlanResponse(
+            agent_run_id=agent_run_id,
+            status=CourseCompletedStatus.COMPLETED,
+            course=course_blueprint,
+            trace=updated_trace,
+        ),
+        "trace": updated_trace,
     }
