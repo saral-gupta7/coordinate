@@ -164,49 +164,55 @@ export function CourseListPageContent() {
         {!isPending && !isError && courses.length > 0 && (
           <div className="grid gap-3">
             {courses.map((course) => (
-              <motion.article
-                className="group border border-white/10 bg-black/20 p-5 transition-all hover:-translate-y-1 hover:border-[#7887ff]/35 hover:bg-[#7887ff]/[0.07]"
+              <Link
+                className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7887ff]"
+                href={`/dashboard/courses/${course.id}`}
                 key={course.id}
-                transition={transition}
-                variants={fadeUp}
               >
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-xl font-medium leading-snug text-[#f4f1ea]">
-                        {course.title}
-                      </h2>
-                      <span className="border border-[#7887ff]/30 bg-[#7887ff]/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[#aab2ff]">
-                        {course.status.toLowerCase()}
-                      </span>
+                <motion.article
+                  className="group border border-white/10 bg-black/20 p-5 transition-all hover:-translate-y-1 hover:border-[#7887ff]/35 hover:bg-[#7887ff]/[0.07]"
+                  transition={transition}
+                  variants={fadeUp}
+                >
+                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl font-medium leading-snug text-[#f4f1ea]">
+                          {course.title}
+                        </h2>
+                        <span className="border border-[#7887ff]/30 bg-[#7887ff]/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[#aab2ff]">
+                          {course.status.toLowerCase()}
+                        </span>
+                      </div>
+                      <p className="mt-3 max-w-3xl text-sm leading-7 text-[#9d968e]">
+                        {course.description}
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-3 text-xs text-[#77716a]">
+                        <span className="inline-flex items-center gap-1.5">
+                          <BookOpenText className="size-3.5 text-[#8f9aff]" />
+                          {course._count.chapters} chapters
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock3 className="size-3.5 text-[#8f9aff]" />
+                          Updated{' '}
+                          {new Date(course.updatedAt).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-[#9d968e]">
-                      {course.description}
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-3 text-xs text-[#77716a]">
-                      <span className="inline-flex items-center gap-1.5">
-                        <BookOpenText className="size-3.5 text-[#8f9aff]" />
-                        {course._count.chapters} chapters
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock3 className="size-3.5 text-[#8f9aff]" />
-                        Updated {new Date(course.updatedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="w-full lg:w-56">
-                    <div className="mb-2 flex justify-between font-mono text-xs text-[#77716a]">
-                      <span>progress</span>
-                      <span>{course.progress}%</span>
+                    <div className="w-full lg:w-56">
+                      <div className="mb-2 flex justify-between font-mono text-xs text-[#77716a]">
+                        <span>progress</span>
+                        <span>{course.progress}%</span>
+                      </div>
+                      <Progress
+                        className="bg-white/10 [&_[data-slot=progress-indicator]]:bg-[#7887ff]"
+                        value={course.progress}
+                      />
                     </div>
-                    <Progress
-                      className="bg-white/10 [&_[data-slot=progress-indicator]]:bg-[#7887ff]"
-                      value={course.progress}
-                    />
                   </div>
-                </div>
-              </motion.article>
+                </motion.article>
+              </Link>
             ))}
           </div>
         )}
