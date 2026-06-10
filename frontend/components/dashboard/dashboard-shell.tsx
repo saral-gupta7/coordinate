@@ -4,7 +4,13 @@ import SignOut from '@/components/sign-out';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { authClient } from '@/lib/auth-client';
-import { BookOpenText, LibraryBig, PanelLeft, Plus, Sparkles } from 'lucide-react';
+import {
+  BookOpenText,
+  LibraryBig,
+  PanelLeft,
+  Plus,
+  Sparkles,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -35,7 +41,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    return window.localStorage.getItem('coordinate-sidebar-collapsed') === 'true';
+    return (
+      window.localStorage.getItem('coordinate-sidebar-collapsed') === 'true'
+    );
   });
 
   const sidebarWidth = isCollapsed ? '4rem' : '18rem';
@@ -65,30 +73,30 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[var(--sidebar-width)] border-r border-white/10 bg-[#07080a]/88 backdrop-blur-xl transition-[width] duration-300 ease-out lg:block">
         <div className="flex h-full flex-col">
           <div
-            className={`flex border-b border-white/10 transition-all duration-300 ${
+            className={`flex border-b border-white/10 p-4 transition-all duration-300 ${
               isCollapsed
-                ? 'h-28 flex-col items-center justify-center gap-3 px-0'
-                : 'h-16 items-center justify-between px-4'
+                ? 'flex-col items-center justify-center gap-3 px-0'
+                : 'items-center justify-between px-4'
             }`}
           >
             <Link
-              className={`group flex min-w-0 items-center gap-2 text-sm font-semibold ${
-                isCollapsed ? 'justify-center' : ''
+              className={`group flex items-center text-sm font-semibold ${
+                isCollapsed ? 'items-center justify-center' : ''
               }`}
               href="/"
             >
               <span
                 className={`flex size-8 items-center justify-center transition-colors ${
                   isCollapsed
-                    ? 'border border-transparent bg-transparent'
-                    : 'border border-white/14 bg-white/[0.04] group-hover:border-[#7887ff]/50 group-hover:bg-[#7887ff]/10'
+                    ? 'bg-transparent'
+                    : 'border-white/14 bg-white/[0.04] group-hover:border-[#7887ff]/50 group-hover:bg-[#7887ff]/10'
                 }`}
               >
                 <Sparkles className="size-4 transition-transform group-hover:scale-110" />
               </span>
               <span
                 className={`origin-left overflow-hidden whitespace-nowrap transition-all duration-200 ${
-                  isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                  isCollapsed ? 'hidden' : 'flex'
                 }`}
               >
                 Coordinate
@@ -96,7 +104,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </Link>
             <button
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="flex size-8 items-center justify-center border border-transparent text-[#77716a] transition-colors hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
+              className="flex size-8 items-center justify-center text-[#77716a] transition-colors hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
               onClick={toggleSidebar}
               type="button"
             >
@@ -121,16 +129,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             >
               Workspace
             </p>
-            <div className={isCollapsed ? 'space-y-3' : 'space-y-1'}>
+            <div className={isCollapsed ? 'space-y-1' : 'space-y-1'}>
               {sidebarItems.map((item) => {
                 const isActive = pathname === item.href;
 
                 return (
                   <Link
                     aria-label={item.label}
-                    className={`group relative flex h-11 items-center gap-3 border px-3 text-sm transition-all duration-200 ${
+                    className={`group relative flex h-11 items-center border px-3 text-sm transition-all duration-200 gap-2 ${
                       isCollapsed
-                        ? 'mx-auto size-10 justify-center border-transparent bg-transparent px-0'
+                        ? 'mx-auto justify-center border-transparent bg-transparent px-0'
                         : 'hover:translate-x-1'
                     } ${
                       isCollapsed
@@ -147,7 +155,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     <item.icon className="size-4 shrink-0 text-[#8f9aff]" />
                     <span
                       className={`origin-left overflow-hidden whitespace-nowrap transition-all duration-200 ${
-                        isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                        isCollapsed ? 'hidden' : 'flex'
                       }`}
                     >
                       {item.label}
@@ -176,10 +184,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               }`}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <Avatar
-                  className="size-10 border border-[#7887ff]/35"
-                  size="lg"
-                >
+                <Avatar className="border border-[#7887ff]/35">
                   <AvatarImage
                     alt="Signed-in user profile image"
                     src={session?.user.image ?? undefined}
@@ -190,7 +195,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </Avatar>
                 <div
                   className={`min-w-0 origin-left overflow-hidden transition-all duration-200 ${
-                    isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                    isCollapsed ? 'hidden' : 'flex flex-col'
                   }`}
                 >
                   <p className="text-sm font-medium">

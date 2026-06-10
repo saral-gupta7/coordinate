@@ -5,21 +5,21 @@ const experienceOptions = [
 ] as const;
 
 const learningModeOptions = [
-  "skill-building",
-  "project-based",
-  "interview-prep",
-  "exam-prep",
-  "research",
-  "standard",
+  { label: "Guided path", value: "guided path" },
+  { label: "Concept mastery", value: "concept mastery" },
+  { label: "Practical application", value: "practical application" },
+  { label: "Reading focused", value: "reading focused" },
+  { label: "Discussion based", value: "discussion based" },
+  { label: "Exam preparation", value: "exam preparation" },
 ];
 
 const preferredStyleOptions = [
-  "project-based",
-  "visual examples",
-  "step-by-step",
-  "hands-on labs",
-  "concept-first",
-  "challenge-driven",
+  { label: "Step by step", value: "step by step" },
+  { label: "Visual examples", value: "visual examples" },
+  { label: "Story driven", value: "story driven" },
+  { label: "Practice based", value: "practice based" },
+  { label: "Theory first", value: "theory first" },
+  { label: "Case studies", value: "case studies" },
 ];
 
 const agentPreview = [
