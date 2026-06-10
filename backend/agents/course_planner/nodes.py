@@ -11,7 +11,7 @@ from .schemas import (
 from .trace import append_trace
 
 
-from .llm import llm
+from core.llm import llm
 
 
 def intake_node(state: CoursePlannerState) -> dict:
