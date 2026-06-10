@@ -7,6 +7,7 @@ import { authClient } from '@/lib/auth-client';
 import { BookOpenText, LibraryBig, PanelLeft, Plus, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 const sidebarItems = [
   { label: 'Overview', href: '/dashboard', icon: LibraryBig },
@@ -29,9 +30,29 @@ function getInitials(name?: string | null, email?: string | null) {
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.localStorage.getItem('coordinate-sidebar-collapsed') === 'true';
+  });
+
+  const sidebarWidth = isCollapsed ? '4rem' : '18rem';
+
+  function toggleSidebar() {
+    setIsCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem('coordinate-sidebar-collapsed', String(next));
+      return next;
+    });
+  }
 
   return (
-    <main className="min-h-svh overflow-hidden bg-[#07080a] text-[#f4f1ea] selection:bg-[#7887ff] selection:text-white">
+    <main
+      className="min-h-svh overflow-hidden bg-[#07080a] text-[#f4f1ea] selection:bg-[#7887ff] selection:text-white"
+      style={{ '--sidebar-width': sidebarWidth } as React.CSSProperties}
+    >
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(255,255,255,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.07)_1px,transparent_1px)] [background-size:72px_72px]"
@@ -41,50 +62,120 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         className="pointer-events-none fixed inset-0 [background:repeating-linear-gradient(135deg,rgba(255,255,255,.022)_0,rgba(255,255,255,.022)_1px,transparent_1px,transparent_9px)]"
       />
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-white/10 bg-[#07080a]/88 backdrop-blur-xl lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[var(--sidebar-width)] border-r border-white/10 bg-[#07080a]/88 backdrop-blur-xl transition-[width] duration-300 ease-out lg:block">
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center justify-between border-b border-white/10 px-5">
+          <div
+            className={`flex border-b border-white/10 transition-all duration-300 ${
+              isCollapsed
+                ? 'h-28 flex-col items-center justify-center gap-3 px-0'
+                : 'h-16 items-center justify-between px-4'
+            }`}
+          >
             <Link
-              className="group flex items-center gap-2 text-sm font-semibold"
+              className={`group flex min-w-0 items-center gap-2 text-sm font-semibold ${
+                isCollapsed ? 'justify-center' : ''
+              }`}
               href="/"
             >
-              <span className="flex size-8 items-center justify-center border border-white/14 bg-white/[0.04] transition-colors group-hover:border-[#7887ff]/50 group-hover:bg-[#7887ff]/10">
+              <span
+                className={`flex size-8 items-center justify-center transition-colors ${
+                  isCollapsed
+                    ? 'border border-transparent bg-transparent'
+                    : 'border border-white/14 bg-white/[0.04] group-hover:border-[#7887ff]/50 group-hover:bg-[#7887ff]/10'
+                }`}
+              >
                 <Sparkles className="size-4 transition-transform group-hover:scale-110" />
               </span>
-              Coordinate
+              <span
+                className={`origin-left overflow-hidden whitespace-nowrap transition-all duration-200 ${
+                  isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                }`}
+              >
+                Coordinate
+              </span>
             </Link>
-            <PanelLeft className="size-4 text-[#77716a]" />
+            <button
+              aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="flex size-8 items-center justify-center border border-transparent text-[#77716a] transition-colors hover:border-white/10 hover:bg-white/[0.045] hover:text-white"
+              onClick={toggleSidebar}
+              type="button"
+            >
+              <PanelLeft
+                className={`size-4 transition-transform duration-300 ${
+                  isCollapsed ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
           </div>
 
-          <nav aria-label="Dashboard" className="flex-1 px-3 py-5">
-            <p className="px-3 pb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#77716a]">
+          <nav
+            aria-label="Dashboard"
+            className={`flex-1 transition-all duration-300 ${
+              isCollapsed ? 'px-2 py-8' : 'px-3 py-5'
+            }`}
+          >
+            <p
+              className={`px-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#77716a] transition-all duration-200 ${
+                isCollapsed ? 'h-0 pb-0 opacity-0' : 'h-auto pb-3 opacity-100'
+              }`}
+            >
               Workspace
             </p>
-            <div className="space-y-1">
+            <div className={isCollapsed ? 'space-y-3' : 'space-y-1'}>
               {sidebarItems.map((item) => {
                 const isActive = pathname === item.href;
 
                 return (
                   <Link
-                    className={`group flex h-11 items-center gap-3 border px-3 text-sm transition-all hover:translate-x-1 ${
-                      isActive
-                        ? 'border-[#7887ff]/35 bg-[#7887ff]/12 text-white'
-                        : 'border-transparent text-[#9d968e] hover:border-white/10 hover:bg-white/[0.045] hover:text-[#f4f1ea]'
+                    aria-label={item.label}
+                    className={`group relative flex h-11 items-center gap-3 border px-3 text-sm transition-all duration-200 ${
+                      isCollapsed
+                        ? 'mx-auto size-10 justify-center border-transparent bg-transparent px-0'
+                        : 'hover:translate-x-1'
+                    } ${
+                      isCollapsed
+                        ? isActive
+                          ? 'text-white'
+                          : 'text-[#9d968e] hover:text-[#f4f1ea]'
+                        : isActive
+                          ? 'border-[#7887ff]/35 bg-[#7887ff]/12 text-white'
+                          : 'border-transparent text-[#9d968e] hover:border-white/10 hover:bg-white/[0.045] hover:text-[#f4f1ea]'
                     }`}
                     href={item.href}
                     key={item.label}
                   >
-                    <item.icon className="size-4 text-[#8f9aff]" />
-                    {item.label}
+                    <item.icon className="size-4 shrink-0 text-[#8f9aff]" />
+                    <span
+                      className={`origin-left overflow-hidden whitespace-nowrap transition-all duration-200 ${
+                        isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                    {isCollapsed && (
+                      <span className="pointer-events-none absolute left-12 top-1/2 z-50 -translate-y-1/2 border border-white/10 bg-[#15171d] px-3 py-2 text-sm text-[#f4f1ea] opacity-0 shadow-xl shadow-black/30 transition-opacity group-hover:opacity-100">
+                        {item.label}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
             </div>
           </nav>
 
-          <div className="border-t border-white/10 p-4">
-            <div className="mb-4 border border-white/10 bg-white/[0.025] p-3">
-              <div className="flex items-center gap-3">
+          <div
+            className={`border-t border-white/10 transition-all duration-300 ${
+              isCollapsed ? 'flex flex-col items-center gap-3 p-2.5' : 'p-4'
+            }`}
+          >
+            <div
+              className={`group relative transition-all duration-200 ${
+                isCollapsed
+                  ? 'mb-0 flex size-10 items-center justify-center'
+                  : 'mb-4 border border-white/10 bg-white/[0.025] p-3'
+              }`}
+            >
+              <div className="flex min-w-0 items-center gap-3">
                 <Avatar
                   className="size-10 border border-[#7887ff]/35"
                   size="lg"
@@ -97,30 +188,55 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     {getInitials(session?.user.name, session?.user.email)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-[#f4f1ea]">
+                <div
+                  className={`min-w-0 origin-left overflow-hidden transition-all duration-200 ${
+                    isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                  }`}
+                >
+                  <p className="text-sm font-medium">
                     {session?.user.name ?? 'Learner'}
                   </p>
-                  <p className="truncate text-xs text-[#77716a]">
+                  <p className="mt-1 text-xs text-[#aaa39b]">
                     {session?.user.email}
                   </p>
                 </div>
               </div>
+              {isCollapsed && (
+                <div className="pointer-events-none absolute bottom-0 left-12 z-50 min-w-56 border border-white/10 bg-[#15171d] px-3 py-2 opacity-0 shadow-xl shadow-black/30 transition-opacity group-hover:opacity-100">
+                  <p className="truncate text-sm font-medium text-[#f4f1ea]">
+                    {session?.user.name ?? 'Learner'}
+                  </p>
+                  <p className="mt-1 truncate text-xs text-[#aaa39b]">
+                    {session?.user.email}
+                  </p>
+                </div>
+              )}
             </div>
             <Button
               asChild
-              className="h-10 w-full bg-[#6f7dff] text-white hover:bg-[#7c8cff]"
+              className={`h-10 text-white ${
+                isCollapsed
+                  ? 'size-10 bg-transparent px-0 hover:bg-transparent hover:text-[#aab2ff]'
+                  : 'w-full bg-[#6f7dff] hover:bg-[#7c8cff]'
+              }`}
+              size={isCollapsed ? 'icon' : 'default'}
             >
-              <Link href="/create">
+              <Link aria-label="Create course" href="/create">
                 <Plus className="size-4" />
-                New course
+                <span
+                  className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${
+                    isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'
+                  }`}
+                >
+                  New course
+                </span>
               </Link>
             </Button>
           </div>
         </div>
       </aside>
 
-      <div className="relative z-10 lg:pl-72">
+      <div className="relative z-10 transition-[padding] duration-300 ease-out lg:pl-[var(--sidebar-width)]">
         <header className="sticky top-0 z-20 border-b border-white/10 bg-[#07080a]/82 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
             <div className="flex items-center gap-3 lg:hidden">
