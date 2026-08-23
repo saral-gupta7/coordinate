@@ -1,17 +1,22 @@
+import { AppToaster } from '@/components/app-toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 import QueryProviderClient from '@/providers/query-client-provider';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Public_Sans } from 'next/font/google';
-import { Toaster } from 'sonner';
+import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google';
 
 import './globals.css';
-
-const publicSans = Public_Sans({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+});
+
+const editorial = Cormorant_Garamond({
+  variable: '--font-editorial',
+  subsets: ['latin'],
+  style: ['italic'],
+  weight: ['500', '600'],
 });
 
 const geistMono = Geist_Mono({
@@ -53,13 +58,13 @@ export default function RootLayout({
         geistSans.variable,
         geistMono.variable,
         'font-sans',
-        publicSans.variable,
+        editorial.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProviderClient>{children}</QueryProviderClient>
-          <Toaster />
+          <AppToaster />
         </ThemeProvider>
       </body>
     </html>

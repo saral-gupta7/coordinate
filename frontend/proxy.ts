@@ -1,26 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "./lib/session";
+import { getSessionCookie } from 'better-auth/cookies';
+import { NextRequest, NextResponse } from 'next/server';
 
-export default async function proxy(request: NextRequest) {
-  const session = await getSession(request);
-  const isLoginPage = request.nextUrl.pathname === "/login";
-  const isCreatePage = request.nextUrl.pathname === "/create";
-
-  if (isLoginPage && session) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (!isLoginPage && !session) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (isCreatePage && !session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+export default function proxy(request: NextRequest) {
+  if (!getSessionCookie(request)) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/create"],
+  matcher: ['/dashboard/:path*', '/courses/:path*'],
 };

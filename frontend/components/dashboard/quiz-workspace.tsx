@@ -1,265 +1,137 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
+import { ChapterPanel, type ChapterNavItem } from '@/components/dashboard/course-workspace';
+import { ModeToggle } from '@/components/theme-toggle';
 import type { LessonQuiz, QuizQuestion } from '@/lib/schemas/lesson.schema';
-import { CheckCircle2, ChevronLeft, Circle, XCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Menu, RotateCcw, X } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 
 type QuizWorkspaceProps = {
-  course: {
-    id: string;
-    title: string;
-  };
-  chapter: {
-    id: string;
-    title: string;
-    order: number;
-    quizJson: unknown;
-  };
+  course: { id: string; title: string; chapters: ChapterNavItem[] };
+  chapter: { id: string; title: string; order: number; quizJson: unknown };
 };
 
 export function QuizWorkspace({ chapter, course }: QuizWorkspaceProps) {
   const quiz = useMemo(() => getQuiz(chapter.quizJson), [chapter.quizJson]);
+  const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (!quiz) {
     return (
-      <main className="min-h-screen bg-[#090a0d] p-[clamp(1rem,2.4vw,2.5rem)] text-[#f4f1ea]">
-        <BackLink courseId={course.id} />
-        <div className="mt-6 border border-white/10 bg-white/[0.025] p-5">
+      <main className="grid min-h-svh place-items-center bg-[var(--canvas)] p-5">
+        <div className="max-w-md rounded-[24px] border bg-[var(--surface)] p-8 text-center">
           <h1 className="text-2xl font-semibold">Quiz unavailable</h1>
+          <p className="mt-3 text-sm text-[var(--muted)]">Generate the chapter lesson first to create its quiz.</p>
+          <Link className="mt-6 inline-flex rounded-full bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-[var(--surface)]" href={`/courses/${course.id}?chapter=${chapter.id}`}>Return to chapter</Link>
         </div>
       </main>
     );
   }
 
-  const answeredCount = Object.keys(answers).length;
-  const correctCount = quiz.questions.reduce((total, question, index) => {
-    return answers[index] === question.correct_answer_index ? total + 1 : total;
-  }, 0);
+  const question = quiz.questions[index];
+  const selected = answers[index];
+  const answered = selected !== undefined;
+  const correct = selected === question.correct_answer_index;
+  const finished = index === quiz.questions.length - 1 && answered;
+  const score = quiz.questions.reduce((total, item, questionIndex) => total + (answers[questionIndex] === item.correct_answer_index ? 1 : 0), 0);
+
+  function restart() {
+    setAnswers({});
+    setIndex(0);
+  }
 
   return (
-    <main className="min-h-screen bg-[#090a0d] text-[#f4f1ea]">
-      <div className="mx-auto w-full max-w-[1180px] px-[clamp(1rem,2.4vw,2.5rem)] py-5">
-        <BackLink courseId={course.id} />
+    <main className="min-h-svh bg-[var(--canvas)] text-[var(--ink)]">
+      <div className="grid min-h-svh lg:grid-cols-[290px_minmax(0,1fr)]">
+        <aside className="sticky top-0 hidden h-svh border-r lg:block">
+          <ChapterPanel activeId={chapter.id} chapters={course.chapters} courseId={course.id} />
+        </aside>
 
-        <header className="mt-5 grid gap-4 border-b border-white/10 pb-5 lg:grid-cols-[minmax(0,1fr)_260px]">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border-[#7887ff]/30 bg-[#7887ff]/10 text-[#aab2ff]">
-                Chapter {chapter.order}
-              </Badge>
-              <Badge
-                className="border-white/10 bg-white/[0.035] text-[#9d968e]"
-                variant="outline"
-              >
-                {quiz.questions.length} questions
-              </Badge>
+        <div className="min-w-0">
+          <header className="flex h-17 items-center gap-4 border-b px-5 sm:px-8">
+            <button className="grid size-10 place-items-center rounded-full border bg-[var(--surface)] lg:hidden" onClick={() => setDrawerOpen(true)} type="button"><Menu className="size-4" /></button>
+            <Link className="focus-ring inline-flex items-center gap-2 text-xs font-semibold text-[var(--muted)] hover:text-[var(--ink)]" href={`/courses/${course.id}?chapter=${chapter.id}`}><ArrowLeft className="size-4" />Chapter</Link>
+            <p className="ml-auto hidden max-w-sm truncate text-sm font-medium sm:block">{course.title}</p>
+            <ModeToggle />
+          </header>
+
+          <section className="mx-auto flex min-h-[calc(100svh-68px)] max-w-4xl flex-col px-5 py-10 sm:px-8 lg:justify-center lg:py-16">
+            <div className="mb-8 flex items-center gap-2">
+              {quiz.questions.map((_, questionIndex) => (
+                <button
+                  aria-label={`Question ${questionIndex + 1}`}
+                  className={`h-1.5 flex-1 rounded-full transition ${questionIndex <= index ? 'bg-[var(--accent)]' : 'bg-[var(--line)]'}`}
+                  key={questionIndex}
+                  onClick={() => setIndex(questionIndex)}
+                  type="button"
+                />
+              ))}
             </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-normal sm:text-4xl">
-              {chapter.title}
-            </h1>
-            <p className="mt-3 text-sm text-[#9d968e]">{course.title}</p>
-          </div>
 
-          <div className="grid grid-cols-2 border border-white/10 bg-white/[0.025]">
-            <ScoreMetric label="answered" value={`${answeredCount}/${quiz.questions.length}`} />
-            <ScoreMetric label="correct" value={correctCount} />
-          </div>
-        </header>
+            <div className="rounded-[28px] border bg-[var(--surface)] p-6 shadow-[var(--shadow)] sm:p-10">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                <span>Question {index + 1} / {quiz.questions.length}</span>
+                <span>{question.concept}</span>
+              </div>
+              <h1 className="mt-8 max-w-3xl text-[clamp(1.65rem,3.2vw,2.7rem)] font-semibold leading-[1.15] tracking-[-0.045em]">{question.question}</h1>
 
-        <section className="grid gap-4 py-5">
-          {quiz.questions.map((question, questionIndex) => {
-            const selectedAnswer = answers[questionIndex];
-            const hasAnswered = selectedAnswer !== undefined;
-            const isCorrect = selectedAnswer === question.correct_answer_index;
+              <div className="mt-9 grid gap-3">
+                {question.options.map((option, optionIndex) => {
+                  const isAnswer = optionIndex === question.correct_answer_index;
+                  const isSelected = optionIndex === selected;
+                  let style = 'border-[var(--line)] hover:border-[var(--accent)]';
+                  if (answered && isAnswer) style = 'border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_10%,transparent)]';
+                  else if (answered && isSelected) style = 'border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]';
 
-            return (
-              <article
-                className="border border-white/10 bg-white/[0.025] p-5"
-                key={question.question}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="flex size-8 shrink-0 items-center justify-center border border-white/10 bg-black/20 font-mono text-xs text-[#8f9aff]">
-                    {questionIndex + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <h2 className="max-w-3xl text-base font-semibold leading-7 text-[#f4f1ea]">
-                        {question.question}
-                      </h2>
-                      {hasAnswered && (
-                        <Badge
-                          className={
-                            isCorrect
-                              ? 'border-[#7ed7a5]/35 bg-[#7ed7a5]/10 text-[#d8f8e3]'
-                              : 'border-[#d58b6a]/35 bg-[#d58b6a]/10 text-[#f0b89f]'
-                          }
-                          variant="outline"
-                        >
-                          {isCorrect ? 'correct' : 'incorrect'}
-                        </Badge>
-                      )}
-                    </div>
+                  return (
+                    <button className={`focus-ring flex min-h-15 items-center gap-4 rounded-2xl border px-5 py-4 text-left text-sm font-medium transition ${style}`} key={option} onClick={() => setAnswers((current) => ({ ...current, [index]: optionIndex }))} type="button">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-full border text-xs">{String.fromCharCode(65 + optionIndex)}</span>
+                      {option}
+                      {answered && isAnswer && <Check className="ml-auto size-4 text-[var(--success)]" />}
+                    </button>
+                  );
+                })}
+              </div>
 
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                      {question.options.map((option, optionIndex) => {
-                        const isSelected = selectedAnswer === optionIndex;
-                        const isAnswer = optionIndex === question.correct_answer_index;
-
-                        return (
-                          <button
-                            className={getOptionClass({
-                              hasAnswered,
-                              isAnswer,
-                              isSelected,
-                            })}
-                            key={option}
-                            onClick={() =>
-                              setAnswers((current) => ({
-                                ...current,
-                                [questionIndex]: optionIndex,
-                              }))
-                            }
-                            type="button"
-                          >
-                            {getOptionIcon({
-                              hasAnswered,
-                              isAnswer,
-                              isSelected,
-                            })}
-                            <span>{option}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {hasAnswered && (
-                      <div className="mt-4 border border-white/10 bg-black/20 p-4">
-                        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8f9aff]">
-                          {question.concept}
-                        </p>
-                        <p className="mt-2 text-sm leading-6 text-[#b8b1a8]">
-                          {question.explanation}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+              {answered && (
+                <div className="mt-6 rounded-2xl bg-[var(--surface-soft)] p-5">
+                  <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${correct ? 'text-[var(--success)]' : 'text-[var(--danger)]'}`}>{correct ? 'Correct' : 'Not quite'}</p>
+                  <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{question.explanation}</p>
                 </div>
-              </article>
-            );
-          })}
-        </section>
+              )}
+
+              <div className="mt-8 flex items-center justify-between">
+                <button className="focus-ring inline-flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold disabled:opacity-30" disabled={index === 0} onClick={() => setIndex((current) => current - 1)} type="button"><ArrowLeft className="size-4" />Previous</button>
+                {finished ? (
+                  <button className="focus-ring inline-flex h-11 items-center gap-2 rounded-full bg-[var(--ink)] px-5 text-sm font-semibold text-[var(--surface)]" onClick={restart} type="button"><RotateCcw className="size-4" />Score {score}/{quiz.questions.length}</button>
+                ) : (
+                  <button className="focus-ring inline-flex h-11 items-center gap-2 rounded-full bg-[var(--ink)] px-5 text-sm font-semibold text-[var(--surface)] disabled:opacity-30" disabled={!answered} onClick={() => setIndex((current) => Math.min(current + 1, quiz.questions.length - 1))} type="button">Next <ArrowRight className="size-4" /></button>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
+
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button aria-label="Close chapter drawer" className="absolute inset-0 bg-black/55" onClick={() => setDrawerOpen(false)} type="button" />
+          <aside className="absolute inset-y-0 left-0 w-[min(88vw,320px)] border-r bg-[var(--surface-soft)] shadow-2xl">
+            <button className="absolute right-4 top-4 z-10 grid size-9 place-items-center rounded-full border bg-[var(--surface)]" onClick={() => setDrawerOpen(false)} type="button"><X className="size-4" /></button>
+            <ChapterPanel activeId={chapter.id} chapters={course.chapters} courseId={course.id} />
+          </aside>
+        </div>
+      )}
     </main>
   );
 }
 
-function BackLink({ courseId }: { courseId: string }) {
-  return (
-    <Link
-      className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8b857e] transition-colors hover:text-[#f4f1ea]"
-      href={`/dashboard/courses/${courseId}`}
-    >
-      <ChevronLeft className="size-4" />
-      Course
-    </Link>
-  );
-}
-
-function ScoreMetric({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="border-r border-white/10 p-4 last:border-r-0">
-      <p className="font-mono text-2xl text-[#f4f1ea]">{value}</p>
-      <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-[#8f9aff]">
-        {label}
-      </p>
-    </div>
-  );
-}
-
-function getOptionClass({
-  hasAnswered,
-  isAnswer,
-  isSelected,
-}: {
-  hasAnswered: boolean;
-  isAnswer: boolean;
-  isSelected: boolean;
-}) {
-  const base =
-    'flex items-start gap-3 border p-3 text-left text-sm leading-6 transition-colors';
-
-  if (!hasAnswered) {
-    return `${base} border-white/10 bg-black/20 text-[#d8d2ca] hover:border-[#7887ff]/35 hover:bg-[#7887ff]/[0.07]`;
-  }
-
-  if (isAnswer) {
-    return `${base} border-[#7ed7a5]/35 bg-[#7ed7a5]/10 text-[#d8f8e3]`;
-  }
-
-  if (isSelected) {
-    return `${base} border-[#d58b6a]/35 bg-[#d58b6a]/10 text-[#f0b89f]`;
-  }
-
-  return `${base} border-white/10 bg-white/[0.025] text-[#77716a]`;
-}
-
-function getOptionIcon({
-  hasAnswered,
-  isAnswer,
-  isSelected,
-}: {
-  hasAnswered: boolean;
-  isAnswer: boolean;
-  isSelected: boolean;
-}) {
-  if (!hasAnswered) {
-    return <Circle className="mt-1 size-4 shrink-0 text-[#77716a]" />;
-  }
-
-  if (isAnswer) {
-    return <CheckCircle2 className="mt-1 size-4 shrink-0 text-[#7ed7a5]" />;
-  }
-
-  if (isSelected) {
-    return <XCircle className="mt-1 size-4 shrink-0 text-[#d58b6a]" />;
-  }
-
-  return <Circle className="mt-1 size-4 shrink-0 text-[#55504a]" />;
-}
-
 function getQuiz(value: unknown): LessonQuiz | null {
-  if (!value || typeof value !== 'object' || !('questions' in value)) {
-    return null;
-  }
-
+  if (!value || typeof value !== 'object' || !('questions' in value)) return null;
   const questions = (value as { questions: unknown }).questions;
-
-  if (!Array.isArray(questions)) {
-    return null;
-  }
-
-  const parsedQuestions = questions.filter(isQuizQuestion);
-
-  if (parsedQuestions.length === 0) {
-    return null;
-  }
-
-  return {
-    questions: parsedQuestions,
-  };
-}
-
-function isQuizQuestion(value: unknown): value is QuizQuestion {
-  return (
-    Boolean(value) &&
-    typeof value === 'object' &&
-    typeof (value as QuizQuestion).question === 'string' &&
-    Array.isArray((value as QuizQuestion).options) &&
-    typeof (value as QuizQuestion).correct_answer_index === 'number' &&
-    typeof (value as QuizQuestion).explanation === 'string' &&
-    typeof (value as QuizQuestion).concept === 'string'
-  );
+  if (!Array.isArray(questions)) return null;
+  const parsed = questions.filter((item): item is QuizQuestion => Boolean(item) && typeof item === 'object' && typeof (item as QuizQuestion).question === 'string' && Array.isArray((item as QuizQuestion).options) && typeof (item as QuizQuestion).correct_answer_index === 'number');
+  return parsed.length ? { questions: parsed } : null;
 }

@@ -1,8 +1,12 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+
+import { requireServerEnv } from './server-env';
 
 const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString: requireServerEnv('DATABASE_URL'),
+  connectionTimeoutMillis: 5_000,
+  idleTimeoutMillis: 10_000,
 });
 
 declare global {
@@ -11,6 +15,6 @@ declare global {
 
 export const prisma = globalThis.__prisma || new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   globalThis.__prisma = prisma;
 }

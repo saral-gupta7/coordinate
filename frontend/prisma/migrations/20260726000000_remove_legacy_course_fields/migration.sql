@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS "Test";
+
+ALTER TABLE "Course"
+DROP COLUMN IF EXISTS "learningMode",
+DROP COLUMN IF EXISTS "preferredStyle",
+DROP COLUMN IF EXISTS "weeklyCommitment";

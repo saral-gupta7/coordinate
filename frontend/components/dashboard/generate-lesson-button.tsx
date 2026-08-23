@@ -1,47 +1,31 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { generateLessonAction } from '@/lib/actions/lesson.action';
-import { Loader2, Sparkles } from 'lucide-react';
+import { LoaderCircle, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
+import { toast } from 'sonner';
 
-type GenerateLessonButtonProps = {
-  courseId: string;
-  chapterId: string;
-  hasContent: boolean;
-};
-
-export function GenerateLessonButton({
-  courseId,
-  chapterId,
-  hasContent,
-}: GenerateLessonButtonProps) {
+export function GenerateLessonButton({ chapterId, courseId, hasContent }: { chapterId: string; courseId: string; hasContent: boolean }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
 
   return (
-    <Button
-      className="h-9 border-white/12 bg-white/[0.035] text-[#d8d2ca] hover:bg-white/[0.075] hover:text-white"
-      disabled={isPending}
-      onClick={() => {
-        startTransition(async () => {
-          const result = await generateLessonAction(courseId, chapterId);
-
-          if (result.ok) {
-            router.refresh();
-          }
-        });
-      }}
+    <button
+      className="focus-ring inline-flex items-center gap-2 rounded-full bg-[var(--ink)] px-4 py-2 text-xs font-semibold text-[var(--surface)] disabled:opacity-60"
+      disabled={pending}
+      onClick={() => startTransition(async () => {
+        const result = await generateLessonAction(courseId, chapterId);
+        if (!result.ok) toast.error(result.error);
+        else {
+          toast.success('Lesson is ready.');
+          router.refresh();
+        }
+      })}
       type="button"
-      variant="outline"
     >
-      {isPending ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : (
-        <Sparkles className="size-4" />
-      )}
-      {hasContent ? 'Regenerate lesson' : 'Generate lesson'}
-    </Button>
+      {pending ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+      {pending ? 'Generating…' : hasContent ? 'Regenerate lesson' : 'Generate lesson'}
+    </button>
   );
 }

@@ -6,11 +6,6 @@ datasource db {
   provider = "postgresql"
 }
 
-model Test {
-  id   String @id @default(cuid())
-  name String
-}
-
 model User {
   id            String    @id
   name          String
@@ -81,6 +76,12 @@ enum ExperienceLevel {
   ADVANCED
 }
 
+enum CourseDepth {
+  QUICK_START
+  STANDARD
+  COMPREHENSIVE
+}
+
 enum CourseStatus {
   DRAFT
   GENERATING
@@ -103,9 +104,6 @@ model Course {
   title              String
   description        String          @db.Text
   goal               String?         @db.Text
-  learningMode       String?
-  preferredStyle     String?
-  weeklyCommitment   Int?
   finalProject       String?         @db.Text
   learningObjectives Json?
   assessmentPlan     Json?
@@ -114,6 +112,7 @@ model Course {
   progress           Int             @default(0)
   imageUrl           String?
   experienceLevel    ExperienceLevel @default(BEGINNER)
+  courseDepth        CourseDepth     @default(STANDARD)
   plannerAgentRunId  String?
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt

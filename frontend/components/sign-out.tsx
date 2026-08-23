@@ -2,7 +2,6 @@ import { authClient } from "@/lib/auth-client";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "./ui/button";
 
 const SignOut = () => {
   const router = useRouter();
@@ -27,21 +26,14 @@ const SignOut = () => {
     }
   };
   return (
-    <Button
+    <button
       aria-label="Log out"
-      className="h-9 border-white/12 bg-white/[0.035] px-3 text-[#d8d2ca] hover:bg-white/[0.075] hover:text-white"
-      variant="outline"
+      className="focus-ring inline-flex size-10 items-center justify-center rounded-full border bg-[var(--surface)] text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--ink)]"
       onClick={handleSignOut}
+      type="button"
     >
       <LogOut className="size-4" />
-      <span className="hidden sm:inline">Logout</span>
-    </Button>
-    // <button
-    //   className="rounded-sm bg-red-400 text-white px-2 py-3"
-    //   onClick={handleSignOut}
-    // >
-    //   Sign Out
-    // </button>
+    </button>
   );
 };
 

@@ -1,284 +1,158 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  ArrowRight,
-  BookOpenText,
-  CheckCircle2,
-  Layers3,
-  ListChecks,
-  LockKeyhole,
-  Route,
-  Sparkles,
-} from 'lucide-react';
+import { BrandMark } from '@/components/brand-mark';
+import { ModeToggle } from '@/components/theme-toggle';
+import { auth } from '@/lib/auth';
+import { ArrowRight, BookOpen, Check, GitBranch, Sparkles, UserRound } from 'lucide-react';
 import Link from 'next/link';
+import { headers } from 'next/headers';
 
-const shipped = [
-  {
-    label: 'Course Planner',
-    value: 'Live',
-  },
-  {
-    label: 'Lesson Builder',
-    value: 'Live',
-  },
-  {
-    label: 'Quiz Workspace',
-    value: 'Live',
-  },
+const steps = [
+  ['01', 'Describe the destination', 'Tell Coordinate what you want to learn, your starting point, and the outcome that matters.'],
+  ['02', 'Receive a learning map', 'The planner interprets your intent, validates it, and builds a chapter sequence at the right depth.'],
+  ['03', 'Turn plans into practice', 'Generate focused lessons and use chapter quizzes to check what actually stayed with you.'],
 ];
 
-const workflow = [
-  {
-    icon: Route,
-    title: 'Plan',
-    body: 'Turn a topic, goal, level, and schedule into a structured course.',
-  },
-  {
-    icon: BookOpenText,
-    title: 'Study',
-    body: 'Generate lessons, outcomes, project tasks, resources, and citations.',
-  },
-  {
-    icon: ListChecks,
-    title: 'Check',
-    body: 'Take chapter quizzes with instant correctness and explanations.',
-  },
-];
+export default async function Home() {
+  const session = await auth.api
+    .getSession({ headers: await headers() })
+    .catch(() => null);
 
-export default function Home() {
   return (
-    <main className="min-h-svh overflow-hidden bg-[#08090b] text-[#f4f1ea] selection:bg-[#7ed7a5] selection:text-black">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 opacity-[0.1] [background-image:linear-gradient(rgba(255,255,255,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.07)_1px,transparent_1px)] [background-size:72px_72px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 [background:repeating-linear-gradient(135deg,rgba(255,255,255,.022)_0,rgba(255,255,255,.022)_1px,transparent_1px,transparent_9px)]"
-      />
-
-      <header className="relative z-10 border-b border-white/10 bg-[#08090b]/88 backdrop-blur-xl">
-        <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8 lg:px-10">
-          <Link className="group flex items-center gap-2 text-sm font-semibold" href="/">
-            <span className="flex size-8 items-center justify-center border border-white/14 bg-white/[0.04] transition-colors group-hover:border-[#7ed7a5]/50 group-hover:bg-[#7ed7a5]/10">
-              <Sparkles className="size-4 transition-transform group-hover:scale-110" />
-            </span>
-            Coordinate
-          </Link>
-
-          <div className="flex items-center gap-2">
-            <Button
-              asChild
-              className="text-[#b8b1a8] hover:bg-white/[0.06] hover:text-white"
-              size="sm"
-              variant="ghost"
-            >
-              <Link href="/login">Sign in</Link>
-            </Button>
-            <Button
-              asChild
-              className="bg-[#f4f1ea] text-black hover:bg-white"
-              size="sm"
-            >
-              <Link href="/create">
-                Create
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </div>
-        </nav>
-      </header>
-
-      <section className="relative z-10 border-b border-white/10">
-        <div className="mx-auto grid min-h-[calc(100svh-4rem)] max-w-7xl gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-10 lg:py-16">
-          <div className="flex flex-col justify-center">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="border-[#7ed7a5]/35 bg-[#7ed7a5]/10 text-[#d8f8e3]">
-                Backend live
-              </Badge>
-              <Badge
-                className="border-white/10 bg-white/[0.035] text-[#9d968e]"
-                variant="outline"
-              >
-                FastAPI + LangGraph
-              </Badge>
-            </div>
-
-            <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.03] tracking-normal text-[#f4f1ea] sm:text-6xl">
-              AI courses that become study workspaces.
-            </h1>
-
-            <p className="mt-5 max-w-xl text-base leading-8 text-[#aaa39b]">
-              Coordinate creates structured courses, generates chapter lessons,
-              and turns quizzes into an interactive study flow.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                className="h-11 bg-[#7ed7a5] px-5 text-black hover:bg-[#98e7ba]"
-              >
-                <Link href="/create">
-                  Start a course
-                  <ArrowRight className="size-4" />
+    <main className="bg-[var(--canvas)] text-[var(--ink)]">
+      <div className="h-3 bg-[var(--accent-strong)]" />
+      <div className="mx-auto max-w-[1600px] p-3 sm:p-5">
+        <div className="overflow-hidden rounded-[24px] border bg-[var(--surface)]">
+          <header className="flex h-20 items-center justify-between border-b px-5 sm:px-8">
+            <Link className="flex items-center gap-3 text-xl font-semibold tracking-[-0.04em]" href="/">
+              <BrandMark />
+              coordinate.
+            </Link>
+            <nav className="flex items-center gap-2">
+              <ModeToggle />
+              {session?.user ? (
+                <Link
+                  className="focus-ring flex h-11 items-center gap-3 rounded-full border bg-[var(--surface-soft)] p-1.5 pr-4 text-sm font-semibold transition hover:border-[var(--accent)]"
+                  href="/dashboard"
+                >
+                  <span className="grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+                    {session.user.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt={`${session.user.name}'s profile`}
+                        className="size-full object-cover"
+                        referrerPolicy="no-referrer"
+                        src={session.user.image}
+                      />
+                    ) : (
+                      <UserRound className="size-4" />
+                    )}
+                  </span>
+                  <span className="hidden max-w-32 truncate sm:block">
+                    {session.user.name}
+                  </span>
+                  <span className="sm:hidden">Profile</span>
                 </Link>
-              </Button>
-              <Button
-                asChild
-                className="h-11 border-white/14 bg-white/[0.035] px-5 text-[#d8d2ca] hover:bg-white/[0.08] hover:text-white"
-                variant="outline"
-              >
-                <Link href="/dashboard/courses">Open dashboard</Link>
-              </Button>
-            </div>
+              ) : (
+                <>
+                  <Link className="focus-ring hidden rounded-full px-4 py-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--ink)] sm:block" href="/login">
+                    Sign in
+                  </Link>
+                  <Link className="focus-ring rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-ink)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-strong)]" href="/dashboard">
+                    Start learning
+                  </Link>
+                </>
+              )}
+            </nav>
+          </header>
 
-            <div className="mt-10 grid max-w-xl grid-cols-3 border border-white/10 bg-white/[0.025]">
-              {shipped.map((item) => (
-                <div className="border-r border-white/10 p-4 last:border-r-0" key={item.label}>
-                  <p className="font-mono text-xl text-[#f4f1ea]">{item.value}</p>
-                  <p className="mt-1 text-xs leading-5 text-[#827c74]">{item.label}</p>
-                </div>
+          <section className="hairline-grid relative flex min-h-[730px] items-center justify-center overflow-hidden px-5 py-24 text-center">
+            <div className="absolute left-8 top-8 hidden size-28 border-l border-t lg:block" />
+            <div className="absolute bottom-8 right-8 hidden size-28 border-b border-r lg:block" />
+            <div className="relative max-w-5xl">
+              <p className="mx-auto mb-8 flex w-fit items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                <span className="size-1.5 bg-[var(--accent)]" />
+                A course planner that becomes the course
+              </p>
+              <h1 className="text-[clamp(3.4rem,8.2vw,8.4rem)] font-medium leading-[0.82] tracking-[-0.07em]">
+                Find the path
+                <span className="editorial-serif block font-medium text-[var(--accent-strong)]">through anything.</span>
+              </h1>
+              <p className="mx-auto mt-9 max-w-2xl text-base leading-7 text-[var(--muted)] sm:text-lg">
+                Turn one clear request into a structured course, focused lessons, and quizzes that help you learn with direction.
+              </p>
+              <Link className="focus-ring mt-9 inline-flex h-13 items-center gap-3 rounded-full bg-[var(--ink)] px-7 text-sm font-semibold text-[var(--surface)] transition hover:-translate-y-1" href="/dashboard">
+                Build your first course <ArrowRight className="size-4" />
+              </Link>
+            </div>
+          </section>
+
+          <section className="border-t px-5 py-8 sm:px-8">
+            <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Built with a dependable learning stack</p>
+            <div className="mt-7 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-[var(--line)] text-center text-sm font-semibold text-[var(--muted)] sm:grid-cols-5">
+              {['Next.js', 'FastAPI', 'LangGraph', 'PostgreSQL', 'Gemini'].map((technology) => (
+                <div className="bg-[var(--surface)] px-5 py-5" key={technology}>{technology}</div>
               ))}
             </div>
-          </div>
-
-          <div className="flex items-center">
-            <div className="w-full border border-white/12 bg-[#0d0e11]/95 shadow-2xl shadow-black/50">
-              <div className="flex h-12 items-center justify-between border-b border-white/10 px-4">
-                <div className="font-mono text-xs uppercase tracking-[0.18em] text-[#77716a]">
-                  Course workspace
-                </div>
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#7ed7a5]">
-                  <span className="size-2 bg-[#7ed7a5]" />
-                  Ready
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-[210px_minmax(0,1fr)]">
-                <aside className="border-b border-white/10 p-4 md:border-b-0 md:border-r">
-                  <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#77716a]">
-                    Chapters
-                  </p>
-                  <div className="grid gap-2">
-                    {['Foundations', 'Core concepts', 'Practice lab'].map(
-                      (chapter, index) => (
-                        <div
-                          className={`grid grid-cols-[28px_minmax(0,1fr)] gap-3 border p-3 ${
-                            index === 1
-                              ? 'border-[#7ed7a5]/35 bg-[#7ed7a5]/10'
-                              : 'border-white/10 bg-white/[0.025]'
-                          }`}
-                          key={chapter}
-                        >
-                          <span className="flex size-7 items-center justify-center border border-white/10 bg-black/20 font-mono text-[10px] text-[#8f9aff]">
-                            0{index + 1}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm text-[#d8d2ca]">
-                              {chapter}
-                            </span>
-                            <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.14em] text-[#77716a]">
-                              ready
-                            </span>
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </aside>
-
-                <div className="p-5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge className="border-[#7887ff]/30 bg-[#7887ff]/10 text-[#aab2ff]">
-                      Chapter 2
-                    </Badge>
-                    <Badge
-                      className="border-white/10 bg-white/[0.035] text-[#9d968e]"
-                      variant="outline"
-                    >
-                      4 questions
-                    </Badge>
-                  </div>
-                  <h2 className="mt-4 text-2xl font-semibold leading-8 text-[#f4f1ea]">
-                    A generated lesson with a quiz-ready path.
-                  </h2>
-
-                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                    {[
-                      ['Lesson', FileIcon],
-                      ['Quiz', ListChecks],
-                      ['Secure route', LockKeyhole],
-                    ].map(([label, Icon]) => (
-                      <div
-                        className="border border-white/10 bg-black/20 p-4"
-                        key={label as string}
-                      >
-                        <Icon className="size-4 text-[#7ed7a5]" />
-                        <p className="mt-8 text-sm font-medium text-[#d8d2ca]">
-                          {label as string}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-5 border border-white/10 bg-black/25 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-sm font-medium text-[#f4f1ea]">
-                      <CheckCircle2 className="size-4 text-[#7ed7a5]" />
-                      Current base flow
-                    </div>
-                    <p className="text-sm leading-6 text-[#aaa39b]">
-                      Topic to course, course to lesson, lesson to quiz.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </section>
         </div>
-      </section>
 
-      <section className="relative z-10 border-b border-white/10 px-5 py-14 sm:px-8 lg:px-10">
-        <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
-          {workflow.map((item) => (
-            <article
-              className="group border border-white/10 bg-white/[0.025] p-5 transition-colors hover:border-[#7ed7a5]/35 hover:bg-[#7ed7a5]/[0.07]"
-              key={item.title}
-            >
-              <item.icon className="size-5 text-[#7ed7a5]" />
-              <h2 className="mt-10 text-xl font-semibold text-[#f4f1ea]">
-                {item.title}
-              </h2>
-              <p className="mt-3 text-sm leading-7 text-[#918a82]">{item.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="relative z-10 px-5 py-10 sm:px-8 lg:px-10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 border border-white/10 bg-white/[0.025] p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-[#f4f1ea]">
-              Build the next course.
+        <section className="grid gap-8 py-24 lg:grid-cols-[0.8fr_1.2fr] lg:px-12">
+          <div className="self-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-strong)]">One workspace</p>
+            <h2 className="mt-5 max-w-xl text-[clamp(2.6rem,5vw,5rem)] font-semibold leading-[0.95] tracking-[-0.06em]">
+              From vague ambition to the next clear chapter.
             </h2>
-            <p className="mt-2 text-sm text-[#918a82]">
-              Course planner, lesson builder, and quiz workspace are connected.
+            <p className="mt-6 max-w-lg text-base leading-7 text-[var(--muted)]">
+              Your dashboard is both the starting point and the library. New courses appear beside the paths you are already following.
             </p>
           </div>
-          <Button
-            asChild
-            className="h-10 bg-[#f4f1ea] text-black hover:bg-white"
-          >
-            <Link href="/create">
-              Create course
-              <ArrowRight className="size-4" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+          <div className="panel-shadow rounded-[30px] border bg-[var(--surface)] p-3">
+            <div className="rounded-[22px] bg-[var(--surface-soft)] p-5 sm:p-8">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">Course composer</span>
+                <Sparkles className="size-4 text-[var(--accent-strong)]" />
+              </div>
+              <p className="mt-12 max-w-xl text-xl leading-8 text-[var(--ink)]">Teach me practical SQL for analytics. I know spreadsheets, but I have never worked with a database.</p>
+              <div className="mt-20 flex justify-end">
+                <span className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[var(--accent-ink)]">Generate</span>
+              </div>
+            </div>
+            <div className="grid gap-3 pt-3 sm:grid-cols-3">
+              {[
+                [BookOpen, '6 chapters'],
+                [GitBranch, 'Beginner path'],
+                [Check, 'Reviewed plan'],
+              ].map(([Icon, label]) => {
+                const ItemIcon = Icon as typeof BookOpen;
+                return <div className="flex items-center gap-3 rounded-xl border px-4 py-4 text-sm font-medium" key={label as string}><ItemIcon className="size-4 text-[var(--accent-strong)]" />{label as string}</div>;
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border bg-[var(--surface)] px-5 py-20 text-[var(--ink)] sm:px-10 lg:px-16">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-strong)]">How it works</p>
+          <div className="mt-10 grid border-y lg:grid-cols-3">
+            {steps.map(([number, title, description]) => (
+              <article className="border-b py-9 lg:border-b-0 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0" key={number}>
+                <span className="text-xs text-[var(--accent-strong)]">{number}</span>
+                <h3 className="mt-14 text-2xl font-semibold tracking-[-0.04em]">{title}</h3>
+                <p className="mt-4 max-w-sm text-sm leading-7 text-[var(--muted)]">{description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="py-28 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-strong)]">Your next subject</p>
+          <h2 className="mx-auto mt-6 max-w-4xl text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.88] tracking-[-0.07em]">
+            Start with one
+            <span className="editorial-serif block text-[var(--accent-strong)]">good question.</span>
+          </h2>
+          <Link className="focus-ring mt-9 inline-flex h-13 items-center gap-3 rounded-full bg-[var(--ink)] px-7 text-sm font-semibold text-[var(--surface)]" href="/dashboard">
+            Create a course <ArrowRight className="size-4" />
+          </Link>
+        </section>
+      </div>
     </main>
   );
-}
-
-function FileIcon(props: React.ComponentProps<typeof Layers3>) {
-  return <Layers3 {...props} />;
 }

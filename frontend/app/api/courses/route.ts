@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
         description: true,
         progress: true,
         status: true,
+        courseDepth: true,
+        experienceLevel: true,
         updatedAt: true,
         _count: {
           select: {

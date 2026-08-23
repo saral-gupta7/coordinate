@@ -2,6 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { requireServerEnv } from '@/lib/server-env';
 import { ChapterStatus } from '@prisma/client';
 import { headers } from 'next/headers';
 
@@ -82,7 +83,7 @@ export async function generateLessonAction(
 
   const fastApiBaseUrl =
     process.env.FASTAPI_BASE_URL ?? 'http://127.0.0.1:8000';
-  const internalToken = process.env.FASTAPI_INTERNAL_TOKEN ?? 'local-dev-token';
+  const internalToken = requireServerEnv('FASTAPI_INTERNAL_TOKEN');
 
   const response = await fetch(
     `${fastApiBaseUrl}/internal/agents/lesson-build`,
@@ -101,8 +102,7 @@ export async function generateLessonAction(
         course_description: course.description,
         course_goal: course.goal,
         experience_level: course.experienceLevel.toLowerCase(),
-        learning_mode: course.learningMode,
-        preferred_style: course.preferredStyle,
+        course_depth: course.courseDepth.toLowerCase(),
         final_project: course.finalProject,
         chapter_title: chapter.title,
         chapter_description: chapter.description,
