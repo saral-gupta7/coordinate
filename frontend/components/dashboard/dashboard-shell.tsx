@@ -101,9 +101,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="min-h-svh pb-20 lg:pb-0 lg:pl-[82px]">{children}</div>
+      <div className="min-h-svh pb-24 lg:pb-0 lg:pl-[82px]">{children}</div>
 
-      <nav className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] px-3 shadow-2xl backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-2xl border bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] px-3 shadow-2xl backdrop-blur-xl lg:hidden">
         <NavButton active={pathname === '/dashboard'} href="/dashboard" label="Dashboard">
           <Home className="size-[19px]" />
         </NavButton>

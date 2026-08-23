@@ -66,7 +66,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="flex min-h-svh flex-col p-5 sm:p-8">
+      <section className="flex min-h-svh flex-col p-4 sm:p-8">
         <header className="flex items-center justify-between lg:justify-end">
           <Link
             className="focus-ring inline-flex items-center gap-2 text-sm text-(--muted) lg:hidden"
@@ -77,19 +77,19 @@ export default function LoginPage() {
           </Link>
           <ModeToggle />
         </header>
-        <div className="m-auto w-full max-w-md rounded-[28px] border bg-(--surface) p-7 shadow-(--shadow) sm:p-10">
-          <BrandMark className="mb-10" />
+        <div className="my-8 w-full max-w-md self-center rounded-[24px] border bg-(--surface) p-6 shadow-(--shadow) sm:m-auto sm:rounded-[28px] sm:p-10">
+          <BrandMark className="mb-8 sm:mb-10" />
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-(--accent-strong)">
             Sign in
           </p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-[-0.055em]">
+          <h2 className="mt-4 text-3xl font-semibold tracking-[-0.05em] sm:text-4xl sm:tracking-[-0.055em]">
             Open your workspace.
           </h2>
           <p className="mt-4 text-sm leading-6 text-(--muted)">
             Continue with the account you use for Coordinate.
           </p>
 
-          <div className="mt-9 grid gap-3">
+          <div className="mt-8 grid gap-3 sm:mt-9">
             <SocialButton
               disabled={pending !== null}
               onClick={() => signIn('google')}

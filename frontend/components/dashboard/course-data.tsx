@@ -142,6 +142,12 @@ export function DashboardWorkspace() {
 
     if (!result.ok) {
       setPlannerError({ title: result.error, detail: result.detail });
+      requestAnimationFrame(() => {
+        document.querySelector('#course-planner-error')?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      });
       return;
     }
 
@@ -226,9 +232,9 @@ export function DashboardWorkspace() {
   const isBusy = pendingAction !== null;
 
   return (
-    <div className="dashboard-glow mx-auto min-h-svh max-w-[1540px] px-5 py-6 sm:px-8 lg:px-12 lg:py-9">
+    <div className="dashboard-glow mx-auto min-h-svh max-w-[1540px] px-4 py-5 sm:px-8 sm:py-6 lg:px-12 lg:py-9">
       <header className="flex items-center justify-between">
-        <div className="rounded-full border bg-[var(--surface)] px-4 py-2 text-sm font-medium shadow-sm">
+        <div className="max-w-[70vw] truncate rounded-full border bg-[var(--surface)] px-4 py-2 text-sm font-medium shadow-sm sm:max-w-none">
           {session?.user.name ?? 'Your workspace'}
         </div>
         <span className="hidden text-xs uppercase tracking-[0.18em] text-[var(--muted)] sm:block">
@@ -236,14 +242,14 @@ export function DashboardWorkspace() {
         </span>
       </header>
 
-      <section className="scroll-mt-6 py-12 sm:py-16 lg:py-20" id="course-composer">
-        <div className="mb-8 max-w-3xl">
+      <section className="scroll-mt-6 py-10 sm:py-16 lg:py-20" id="course-composer">
+        <div className="mb-7 max-w-3xl sm:mb-8">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-strong)]">
             New learning path
           </p>
-          <h1 className="mt-4 text-[clamp(2.8rem,5vw,5.4rem)] font-semibold leading-[0.9] tracking-[-0.07em]">
+          <h1 className="mt-4 text-[clamp(2.35rem,10vw,5.4rem)] font-semibold leading-[0.94] tracking-[-0.065em] sm:leading-[0.9]">
             What do you want to learn,
-            <span className="editorial-serif ml-2 font-medium text-[var(--accent-strong)] sm:ml-3">
+            <span className="editorial-serif block font-medium text-[var(--accent-strong)] sm:ml-3 sm:inline">
               {firstName}?
             </span>
           </h1>
@@ -253,9 +259,9 @@ export function DashboardWorkspace() {
           </p>
         </div>
 
-        <div className="panel-shadow overflow-hidden rounded-[34px] border bg-[var(--surface)]">
+        <div className="panel-shadow overflow-hidden rounded-[26px] border bg-[var(--surface)] sm:rounded-[34px]">
           <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
-            <div className="flex flex-col p-6 sm:p-9 lg:min-h-[610px] lg:p-12">
+            <div className="order-2 flex flex-col p-5 sm:p-9 lg:order-1 lg:min-h-[610px] lg:p-12">
               <div className="flex items-center justify-between gap-4">
                 <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
                   <Sparkles className="size-4" />
@@ -266,8 +272,8 @@ export function DashboardWorkspace() {
                 </span>
               </div>
 
-              <div className="mt-12">
-                <h2 className="max-w-md text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl">
+              <div className="mt-8 sm:mt-12">
+                <h2 className="max-w-md text-2xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl">
                   A useful course starts with useful context.
                 </h2>
                 <p className="mt-4 max-w-md text-sm leading-7 text-[var(--muted)]">
@@ -276,7 +282,7 @@ export function DashboardWorkspace() {
                 </p>
               </div>
 
-              <div className="mt-9">
+              <div className="mt-7 sm:mt-9">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
                   Try a starting point
                 </p>
@@ -300,7 +306,7 @@ export function DashboardWorkspace() {
                 </div>
               </div>
 
-              <div className="mt-12 grid grid-cols-3 gap-3 border-t pt-7 lg:mt-auto">
+              <div className="mt-9 grid grid-cols-3 gap-3 border-t pt-6 lg:mt-auto lg:pt-7">
                 {[
                   ['01', 'Describe'],
                   ['02', 'Review'],
@@ -314,9 +320,9 @@ export function DashboardWorkspace() {
               </div>
             </div>
 
-            <div className="border-t bg-[var(--surface-soft)] p-4 sm:p-6 lg:border-l lg:border-t-0 lg:p-8">
+            <div className="order-1 bg-[var(--surface-soft)] p-3 sm:p-6 lg:order-2 lg:border-l lg:p-8">
               <form
-                className="flex h-full min-h-[520px] flex-col rounded-[26px] border bg-[var(--surface)] p-4 sm:p-6"
+                className="flex min-h-[440px] flex-col rounded-[21px] border bg-[var(--surface)] p-4 sm:min-h-[520px] sm:rounded-[26px] sm:p-6"
                 onSubmit={handleSubmit(submit)}
               >
                 <div className="flex items-center justify-between gap-4 border-b pb-4">
@@ -336,12 +342,32 @@ export function DashboardWorkspace() {
                       return parsed.success || parsed.error.issues[0]?.message;
                     },
                   })}
-                  aria-describedby="course-request-error"
+                  aria-describedby="course-request-error course-planner-error"
                   aria-invalid={Boolean(errors.prompt || plannerError)}
                   aria-label="Course request"
-                  className="min-h-72 flex-1 resize-none border-0 bg-transparent px-1 py-6 text-base leading-8 placeholder:text-[var(--muted)] focus:outline-none sm:text-lg"
+                  className="min-h-56 flex-1 resize-none border-0 bg-transparent px-1 py-5 text-base leading-7 placeholder:text-[var(--muted)] focus:outline-none sm:min-h-72 sm:py-6 sm:text-lg sm:leading-8"
                   placeholder="For example: I want a practical SQL course for analytics. I know spreadsheets but have never used a database. Help me build confidence writing queries for real datasets."
                 />
+
+                {plannerError && (
+                  <div
+                    aria-live="assertive"
+                    className="mb-4 flex gap-3 rounded-2xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--line))] bg-[var(--danger-soft)] p-4 text-left"
+                    id="course-planner-error"
+                    role="alert"
+                  >
+                    <AlertCircle className="mt-0.5 size-5 shrink-0 text-[var(--danger)]" />
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-semibold text-[var(--danger)]">
+                        {plannerError.title}
+                      </p>
+                      <p className="mt-1 break-words text-xs leading-5 text-[var(--muted)]">
+                        {plannerError.detail ??
+                          'Name a subject or skill and tell us what you want to be able to do.'}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="border-t pt-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -349,7 +375,7 @@ export function DashboardWorkspace() {
                       {errors.prompt?.message}
                     </p>
                     <button
-                      className="focus-ring inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-ink)] shadow-[0_10px_30px_var(--accent-shadow)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60"
+                      className="focus-ring inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-ink)] shadow-[0_10px_30px_var(--accent-shadow)] transition hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:hover:-translate-y-0.5"
                       disabled={isBusy}
                       type="submit"
                     >
@@ -363,25 +389,6 @@ export function DashboardWorkspace() {
                   </div>
                 </div>
               </form>
-
-              {plannerError && (
-                <div
-                  aria-live="assertive"
-                  className="mt-4 flex gap-3 rounded-[20px] border border-[color-mix(in_srgb,var(--danger)_35%,var(--line))] bg-[var(--danger-soft)] p-4 text-left"
-                  role="alert"
-                >
-                  <AlertCircle className="mt-0.5 size-5 shrink-0 text-[var(--danger)]" />
-                  <div>
-                    <p className="text-sm font-semibold text-[var(--danger)]">
-                      {plannerError.title}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-                      {plannerError.detail ??
-                        'Name a subject or skill and tell us what you want to be able to do.'}
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -404,7 +411,7 @@ export function DashboardWorkspace() {
         />
       )}
 
-      <section className="scroll-mt-10 border-t py-14" id="courses">
+      <section className="scroll-mt-10 border-t py-11 sm:py-14" id="courses">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent-strong)]">
@@ -426,7 +433,7 @@ export function DashboardWorkspace() {
           </p>
         )}
         {!isPending && !error && courses.length === 0 && (
-          <div className="rounded-[24px] border border-dashed p-12 text-center">
+          <div className="rounded-[24px] border border-dashed p-8 text-center sm:p-12">
             <BookOpen className="mx-auto size-6 text-[var(--accent-strong)]" />
             <h3 className="mt-5 text-xl font-semibold">
               Your first course starts above.
@@ -502,7 +509,7 @@ function CurriculumReview({
 
   return (
     <section
-      className="scroll-mt-6 border-t py-16"
+      className="scroll-mt-6 border-t py-12 sm:py-16"
       id="curriculum-review"
     >
       <div className="mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -510,7 +517,7 @@ function CurriculumReview({
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-strong)]">
             Curriculum draft {String(revisionNumber).padStart(2, '0')}
           </p>
-          <h2 className="mt-3 max-w-4xl text-[clamp(2.5rem,5vw,5rem)] font-semibold leading-[0.94] tracking-[-0.06em]">
+          <h2 className="mt-3 max-w-4xl text-[clamp(2.15rem,9vw,5rem)] font-semibold leading-[0.98] tracking-[-0.055em] sm:leading-[0.94]">
             Review the path before you commit.
           </h2>
         </div>
@@ -525,15 +532,15 @@ function CurriculumReview({
       </div>
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
-        <div className="overflow-hidden rounded-[28px] border bg-[var(--surface)]">
-          <header className="border-b p-6 sm:p-9">
+        <div className="overflow-hidden rounded-[24px] border bg-[var(--surface)] sm:rounded-[28px]">
+          <header className="border-b p-5 sm:p-9">
             <div className="flex flex-wrap gap-2">
               <MetaPill label={draft.experience_level} />
               <MetaPill label={draft.course_depth.replace('_', ' ')} />
               <MetaPill label={`${draft.chapters.length} chapters`} />
               <MetaPill label={`${totalMinutes} min`} />
             </div>
-            <h3 className="mt-7 text-[clamp(2rem,4vw,4rem)] font-semibold leading-[0.96] tracking-[-0.055em]">
+            <h3 className="mt-7 text-[clamp(1.8rem,8vw,4rem)] font-semibold leading-[1] tracking-[-0.05em] sm:leading-[0.96]">
               {draft.title}
             </h3>
             <p className="mt-5 max-w-3xl text-sm leading-7 text-[var(--muted)] sm:text-base">
@@ -554,7 +561,7 @@ function CurriculumReview({
             <div className="divide-y">
               {draft.chapters.map((chapter) => (
                 <article
-                  className="grid gap-4 px-2 py-6 sm:grid-cols-[52px_minmax(0,1fr)_auto]"
+                  className="grid grid-cols-[44px_minmax(0,1fr)] gap-3 px-1 py-6 sm:grid-cols-[52px_minmax(0,1fr)_auto] sm:gap-4 sm:px-2"
                   key={`${chapter.order}-${chapter.title}`}
                 >
                   <span className="grid size-11 place-items-center rounded-full border bg-[var(--surface-soft)] font-mono text-xs text-[var(--accent-strong)]">
@@ -579,7 +586,7 @@ function CurriculumReview({
                       ))}
                     </ul>
                   </div>
-                  <span className="inline-flex h-fit items-center gap-1.5 text-xs text-[var(--muted)]">
+                  <span className="col-start-2 inline-flex h-fit items-center gap-1.5 text-xs text-[var(--muted)] sm:col-start-auto">
                     <Clock3 className="size-3.5" />
                     {chapter.estimated_duration}m
                   </span>
@@ -607,7 +614,7 @@ function CurriculumReview({
           </div>
         </div>
 
-        <aside className="panel-shadow rounded-[26px] border bg-[var(--surface)] p-5 xl:sticky xl:top-6">
+        <aside className="panel-shadow rounded-[24px] border bg-[var(--surface)] p-5 sm:rounded-[26px] sm:p-6 xl:sticky xl:top-6">
           <div className="flex size-11 items-center justify-center rounded-full bg-[var(--success-soft)] text-[var(--success)]">
             <CheckCircle2 className="size-5" />
           </div>

@@ -110,20 +110,20 @@ export function CourseWorkspace({ course, initialChapterId }: { course: CourseWo
         </aside>
 
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 flex h-17 items-center justify-between border-b bg-[color-mix(in_srgb,var(--canvas)_90%,transparent)] px-5 backdrop-blur-xl sm:px-8">
+          <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-[color-mix(in_srgb,var(--canvas)_90%,transparent)] px-4 backdrop-blur-xl sm:h-17 sm:px-8">
             <button className="focus-ring inline-flex size-10 items-center justify-center rounded-full border bg-[var(--surface)] lg:hidden" onClick={() => setDrawerOpen(true)} type="button"><Menu className="size-4" /><span className="sr-only">Open chapters</span></button>
             <p className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)] sm:block">{course.experienceLevel.toLowerCase()} · {course.courseDepth.toLowerCase().replace('_', ' ')}</p>
             <div className="ml-auto flex items-center gap-2">
               <ModeToggle />
-              <Link className="focus-ring rounded-full border bg-[var(--surface)] px-4 py-2 text-xs font-semibold" href="/dashboard">Dashboard</Link>
+              <Link className="focus-ring rounded-full border bg-[var(--surface)] px-3.5 py-2 text-xs font-semibold sm:px-4" href="/dashboard">Dashboard</Link>
             </div>
           </header>
 
-          <article className="mx-auto max-w-4xl px-5 py-12 sm:px-8 lg:py-18">
-            <header className="border-b pb-10">
+          <article className="mx-auto max-w-4xl px-4 py-9 sm:px-8 sm:py-12 lg:py-18">
+            <header className="border-b pb-8 sm:pb-10">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--accent-strong)]">Chapter {chapter.order} of {course.chapters.length}</p>
-              <h1 className="mt-5 text-[clamp(2.6rem,5vw,5rem)] font-semibold leading-[0.96] tracking-[-0.06em]">{chapter.title}</h1>
-              <p className="mt-6 max-w-3xl text-base leading-8 text-[var(--muted)]">{chapter.description}</p>
+              <h1 className="mt-5 text-balance text-[clamp(2.2rem,11vw,5rem)] font-semibold leading-[1] tracking-[-0.055em] sm:leading-[0.96] sm:tracking-[-0.06em]">{chapter.title}</h1>
+              <p className="mt-5 max-w-3xl text-[15px] leading-7 text-[var(--muted)] sm:mt-6 sm:text-base sm:leading-8">{chapter.description}</p>
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <span className="inline-flex items-center gap-2 rounded-full bg-[var(--surface-soft)] px-3.5 py-2 text-xs text-[var(--muted)]"><Clock3 className="size-3.5" />{chapter.estimatedDuration ?? '—'} min</span>
                 {quiz && <Link className="focus-ring inline-flex items-center gap-2 rounded-full border bg-[var(--surface)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]" href={`/courses/${course.id}/chapters/${chapter.id}/quiz`}><ListChecks className="size-4" />Take quiz</Link>}
@@ -132,7 +132,7 @@ export function CourseWorkspace({ course, initialChapterId }: { course: CourseWo
             </header>
 
             {outcomes.length > 0 && (
-              <section className="border-b py-9">
+              <section className="border-b py-8 sm:py-9">
                 <SectionHeading icon={<Target className="size-4" />} title="What you will learn" />
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   {outcomes.map((outcome) => <p className="flex gap-3 text-sm leading-6 text-[var(--muted)]" key={outcome}><Check className="mt-1 size-4 shrink-0 text-[var(--accent-strong)]" />{outcome}</p>)}
@@ -140,9 +140,9 @@ export function CourseWorkspace({ course, initialChapterId }: { course: CourseWo
               </section>
             )}
 
-            <section className="py-10">
+            <section className="py-8 sm:py-10">
               {chapter.content ? <LessonContent content={chapter.content} /> : (
-                <div className="rounded-[24px] border border-dashed p-10 text-center">
+                <div className="rounded-[22px] border border-dashed p-7 text-center sm:rounded-[24px] sm:p-10">
                   <BookOpen className="mx-auto size-6 text-[var(--accent-strong)]" />
                   <h2 className="mt-5 text-xl font-semibold">This chapter is planned.</h2>
                   <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted)]">Generate its lesson when you are ready to study it.</p>
@@ -162,7 +162,7 @@ export function CourseWorkspace({ course, initialChapterId }: { course: CourseWo
 
             <footer className="mt-8 flex justify-end border-t pt-8">
               {course.chapters[chapter.order] && (
-                <button className="focus-ring inline-flex items-center gap-2 rounded-full bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-[var(--surface)]" onClick={() => selectChapter(course.chapters[chapter.order].id)} type="button">Next chapter <ChevronRight className="size-4" /></button>
+                <button className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-[var(--surface)] sm:w-auto" onClick={() => selectChapter(course.chapters[chapter.order].id)} type="button">Next chapter <ChevronRight className="size-4" /></button>
               )}
             </footer>
           </article>
@@ -172,7 +172,7 @@ export function CourseWorkspace({ course, initialChapterId }: { course: CourseWo
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button aria-label="Close chapter drawer" className="absolute inset-0 bg-black/55" onClick={() => setDrawerOpen(false)} type="button" />
-          <aside className="absolute inset-y-0 left-0 w-[min(88vw,320px)] border-r bg-[var(--surface-soft)] shadow-2xl">
+          <aside className="absolute inset-y-0 left-0 w-[min(92vw,340px)] border-r bg-[var(--surface-soft)] shadow-2xl">
             <button className="absolute right-4 top-4 z-10 grid size-9 place-items-center rounded-full border bg-[var(--surface)]" onClick={() => setDrawerOpen(false)} type="button"><X className="size-4" /></button>
             <ChapterPanel activeId={chapter.id} chapters={course.chapters} courseId={course.id} onSelect={selectChapter} />
           </aside>
