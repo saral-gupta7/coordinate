@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, field_validator
 from enum import Enum
+
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class ExperienceLevel(str, Enum):
@@ -17,35 +18,22 @@ class AgentStepStatus(str, Enum):
 
 class CourseCompletedStatus(str, Enum):
     FAILED = "failed"
+    AWAITING_REVIEW = "awaiting_review"
     COMPLETED = "completed"
 
 
-class CoursePlanRequest(BaseModel):
+class CourseDepth(str, Enum):
+    QUICK_START = "quick_start"
+    STANDARD = "standard"
+    COMPREHENSIVE = "comprehensive"
+
+
+class CourseIntent(BaseModel):
     topic: str = Field(min_length=2, max_length=120)
     goal: str = Field(min_length=5, max_length=500)
     experience_level: ExperienceLevel
-    preferred_style: str = Field(min_length=2, max_length=80)
-    weekly_commitment: int = Field(ge=1, le=40)
-    learning_mode: str = Field(min_length=2, max_length=80)
-
-    @field_validator(
-        "topic",
-        "goal",
-        "preferred_style",
-        "learning_mode",
-        mode="before",
-    )
-    @classmethod
-    def strip_and_reject_blank(cls, value: str) -> str:
-        if not isinstance(value, str):
-            return value
-
-        cleaned = " ".join(value.strip().split())
-
-        if not cleaned:
-            raise ValueError("Field cannot be blank.")
-
-        return cleaned
+    course_depth: CourseDepth
+    assumptions: list[str] = Field(default_factory=list, max_length=5)
 
 
 class ChapterPlan(BaseModel):
@@ -61,9 +49,7 @@ class CourseBlueprint(BaseModel):
     description: str = Field(min_length=20, max_length=1200)
     goal: str = Field(min_length=5, max_length=500)
     experience_level: ExperienceLevel
-    learning_mode: str = Field(min_length=2, max_length=80)
-    preferred_style: str = Field(min_length=2, max_length=80)
-    weekly_commitment: int = Field(ge=1, le=40)
+    course_depth: CourseDepth
     prerequisites: list[str] = Field(default_factory=list, max_length=12)
     learning_objectives: list[str] = Field(
         default_factory=list, min_length=1, max_length=12
@@ -73,6 +59,36 @@ class CourseBlueprint(BaseModel):
     )
     final_project: str = Field(min_length=10, max_length=1200)
     chapters: list[ChapterPlan] = Field(min_length=3, max_length=12)
+
+
+class CoursePlanRequest(BaseModel):
+    prompt: str = Field(min_length=10, max_length=2000)
+    current_course: CourseBlueprint | None = None
+    feedback: str | None = Field(default=None, max_length=2000)
+    is_satisfied: bool | None = None
+
+    @field_validator("prompt", "feedback", mode="before")
+    @classmethod
+    def strip_text(cls, value: str | None) -> str | None:
+        if not isinstance(value, str):
+            return value
+
+        return value.strip()
+
+    @model_validator(mode="after")
+    def validate_curriculum_decision(self) -> "CoursePlanRequest":
+        if self.current_course is None:
+            if self.feedback is not None or self.is_satisfied is not None:
+                raise ValueError("A curriculum is required before it can be reviewed.")
+            return self
+
+        if self.is_satisfied is None:
+            raise ValueError("A curriculum decision is required.")
+
+        if not self.is_satisfied and (not self.feedback or len(self.feedback) < 5):
+            raise ValueError("Describe the curriculum changes you want.")
+
+        return self
 
 
 class AgentTraceStep(BaseModel):
@@ -93,15 +109,6 @@ class TopicValidationResult(BaseModel):
     is_valid: bool
     refined_topic: str = Field(min_length=2, max_length=120)
     reason: str = Field(min_length=5, max_length=500)
-
-
-class LearnerProfile(BaseModel):
-    level: ExperienceLevel
-    goal_summary: str = Field(min_length=5, max_length=500)
-    style_summary: str = Field(min_length=5, max_length=500)
-    time_budget_summary: str = Field(min_length=5, max_length=500)
-    learning_mode: str = Field(min_length=2, max_length=80)
-    planning_notes: list[str] = Field(min_length=1, max_length=10)
 
 
 class CurriculumReviewResult(BaseModel):

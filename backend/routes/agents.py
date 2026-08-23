@@ -1,18 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
-from core.security import verify_internal_request, VerifiedUser
 from uuid import uuid4
+
+from fastapi import APIRouter, Depends, HTTPException
+
 from agents.course_planner.graph import course_planner_graph
 from agents.course_planner.schemas import (
     CoursePlanRequest,
     CoursePlanResponse,
 )
-
-
 from agents.lesson_builder.graph import lesson_builder_graph
 from agents.lesson_builder.schemas import (
     LessonBuildRequest,
     LessonBuildResponse,
 )
+from core.security import VerifiedUser, verify_internal_request
 
 router = APIRouter(prefix="/internal/agents", tags=["agents"])
 

@@ -37,8 +37,7 @@ def draft_lesson_node(state: LessonBuilderState) -> dict:
     Description: {request.course_description}
     Goal: {request.course_goal}
     Experience level: {request.experience_level}
-    Learning mode: {request.learning_mode}
-    Preferred style: {request.preferred_style}
+    Course depth: {request.course_depth.value}
     Final project: {request.final_project}
 
     Chapter:
@@ -55,7 +54,10 @@ def draft_lesson_node(state: LessonBuilderState) -> dict:
     - Explain concepts step by step.
     - Include practical examples.
     - Include short checkpoints or reflection prompts.
-    - Align with the learner's level and preferred style.
+    - Align with the learner's experience level.
+    - Match the scope to the course depth: quick_start is concise and
+      immediately practical, standard balances explanation and practice,
+      and comprehensive explores the topic deeply.
     - If useful, include a project task connected to the course final
     project.
     - Do not include quiz questions here.

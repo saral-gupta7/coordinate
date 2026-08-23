@@ -1,8 +1,5 @@
-from .state import CoursePlannerState
 from .schemas import AgentStepStatus, AgentTraceStep
-
-# this traces job is to track the working of AI agent and maintain a history sort of thingy.
-# this history later will be shown in frontend as timeline.
+from .state import CoursePlannerState
 
 
 def append_trace(

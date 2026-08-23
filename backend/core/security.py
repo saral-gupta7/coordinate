@@ -1,11 +1,9 @@
 import hmac
-import os
-
-from fastapi import Header, HTTPException, status
-from dotenv import load_dotenv
 from dataclasses import dataclass
 
-load_dotenv()
+from fastapi import Depends, Header, HTTPException, status
+
+from core.config import Settings, get_settings
 
 
 @dataclass(frozen=True)
@@ -14,17 +12,13 @@ class VerifiedUser:
     user_email: str | None = None
 
 
-def get_internal_service_token() -> str:
-    token = os.getenv("FASTAPI_INTERNAL_TOKEN", "local-dev-token")
-    return token
-
-
 def verify_internal_request(
     authorization: str | None = Header(default=None),
     x_user_id: str | None = Header(default=None),
     x_user_email: str | None = Header(default=None),
+    settings: Settings = Depends(get_settings),
 ) -> VerifiedUser:
-    expected_token = get_internal_service_token()
+    expected_token = settings.fastapi_internal_token.get_secret_value()
 
     if authorization is None:
         raise HTTPException(

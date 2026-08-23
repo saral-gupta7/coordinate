@@ -14,6 +14,12 @@ class LessonCompletedStatus(str, Enum):
     COMPLETED = "completed"
 
 
+class LessonCourseDepth(str, Enum):
+    QUICK_START = "quick_start"
+    STANDARD = "standard"
+    COMPREHENSIVE = "comprehensive"
+
+
 class AgentTraceStep(BaseModel):
     order: int
     node_name: str
@@ -29,8 +35,7 @@ class LessonBuildRequest(BaseModel):
     course_description: str = Field(min_length=10, max_length=1200)
     course_goal: str | None = Field(default=None, max_length=500)
     experience_level: str = Field(min_length=2, max_length=80)
-    learning_mode: str | None = Field(default=None, max_length=80)
-    preferred_style: str | None = Field(default=None, max_length=80)
+    course_depth: LessonCourseDepth
     final_project: str | None = Field(default=None, max_length=1200)
 
     chapter_title: str = Field(min_length=2, max_length=120)
