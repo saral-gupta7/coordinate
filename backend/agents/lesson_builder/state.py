@@ -7,11 +7,13 @@ from .schemas import (
     LessonQuiz,
     LessonReviewResult,
 )
+from rag.schemas import RetrievedChunk
 
 
 class LessonBuilderState(TypedDict):
     request: LessonBuildRequest
     lesson_draft: NotRequired[LessonDraft]
+    retrieved_sources: NotRequired[list[RetrievedChunk]]
     quiz: NotRequired[LessonQuiz]
     lesson_review: NotRequired[LessonReviewResult]
     review_passed: NotRequired[bool]

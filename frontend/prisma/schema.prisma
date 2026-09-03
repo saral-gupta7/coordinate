@@ -17,6 +17,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   courses       Course[]
+  knowledgeDocuments KnowledgeDocument[]
 
   @@unique([email])
   @@map("user")
@@ -97,6 +98,12 @@ enum ChapterStatus {
   COMPLETED
 }
 
+enum KnowledgeDocumentStatus {
+  PROCESSING
+  READY
+  FAILED
+}
+
 model Course {
   id                 String          @id @default(cuid())
   userId             String
@@ -117,9 +124,48 @@ model Course {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   chapters           Chapter[]
+  knowledgeDocuments KnowledgeDocument[]
 
   @@index([userId])
   @@index([userId, updatedAt])
+}
+
+model KnowledgeDocument {
+  id           String                  @id
+  userId       String
+  user         User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String
+  course       Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  filename     String
+  mimeType     String                  @default("application/pdf")
+  status       KnowledgeDocumentStatus @default(PROCESSING)
+  pageCount    Int                     @default(0)
+  chunkCount   Int                     @default(0)
+  errorMessage String?                 @db.Text
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  chunks       KnowledgeChunk[]
+
+  @@index([userId, courseId])
+  @@index([courseId, createdAt])
+}
+
+model KnowledgeChunk {
+  id          String            @id
+  documentId  String
+  document    KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId      String
+  courseId    String
+  filename    String
+  pageNumber  Int
+  chunkIndex  Int
+  content     String            @db.Text
+  embedding   Unsupported("vector(768)")
+  createdAt   DateTime          @default(now())
+
+  @@unique([documentId, chunkIndex])
+  @@index([userId, courseId])
+  @@index([documentId])
 }
 
 model Chapter {

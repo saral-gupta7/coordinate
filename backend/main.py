@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import get_settings
 from routes.agents import router as agent_router
+from routes.rag import router as rag_router
 
 
 def create_app() -> FastAPI:
@@ -18,6 +19,7 @@ def create_app() -> FastAPI:
     )
 
     application.include_router(agent_router)
+    application.include_router(rag_router)
 
     @application.get("/")
     def health_check():

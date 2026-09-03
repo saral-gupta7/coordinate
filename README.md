@@ -14,6 +14,8 @@ course you can review, refine, study, and test yourself on.
 - Keep approved courses in a personal learning library.
 - Generate chapter lessons with learning outcomes, practice tasks, resources,
   and citations.
+- Upload private course PDFs and ground new lessons in user- and course-scoped
+  pgvector retrieval with inspectable page citations.
 - Take chapter quizzes with instant feedback and score tracking.
 - Move through a responsive, accessible workspace with light and dark themes.
 - Keep every course isolated to the signed-in learner.
@@ -27,6 +29,7 @@ course you can review, refine, study, and test yourself on.
 - Python 3.12 or newer
 - [uv](https://docs.astral.sh/uv/)
 - A PostgreSQL database
+- The `pgvector` PostgreSQL extension
 - A Google Gemini API key
 - Google and GitHub OAuth credentials
 
@@ -40,8 +43,8 @@ cp backend/.env.example backend/.env
 ```
 
 Replace every placeholder in those two new `.env` files. Never commit either
-file. Use the same `FASTAPI_INTERNAL_TOKEN` in both files; generate a strong
-value with:
+file. Use the same `DATABASE_URL` and `FASTAPI_INTERNAL_TOKEN` in both files;
+generate a strong internal token with:
 
 ```bash
 openssl rand -base64 32
@@ -91,6 +94,27 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Course-source RAG
+
+Coordinate's lesson workflow can retrieve from private, text-based PDFs:
+
+```text
+PDF upload -> page extraction -> recursive chunks -> Gemini embeddings
+           -> PostgreSQL/pgvector -> course-scoped similarity retrieval
+           -> LangGraph Lesson Builder -> grounded lesson + page citations
+```
+
+The retrieval query is derived from the selected chapter title, description,
+and outcomes. Every database query is filtered by the authenticated `user_id`
+and `course_id`; uploaded text is treated as untrusted reference data, not as
+instructions. If retrieval is unavailable or finds no sufficiently similar
+chunks, lesson generation continues using the approved course plan and does
+not fabricate private-document citations.
+
+See [docs/RAG_IMPLEMENTATION.md](docs/RAG_IMPLEMENTATION.md) for the complete
+architecture, endpoints, schema, security controls, deployment steps, and test
+strategy.
 
 ## Verify a local setup
 

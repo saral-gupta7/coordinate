@@ -76,6 +76,10 @@ class LessonResource(BaseModel):
 class LessonCitation(BaseModel):
     label: str = Field(min_length=2, max_length=120)
     note: str = Field(min_length=5, max_length=300)
+    document_id: str | None = Field(default=None, max_length=120)
+    filename: str | None = Field(default=None, max_length=255)
+    page_number: int | None = Field(default=None, ge=1, le=10000)
+    chunk_id: str | None = Field(default=None, max_length=120)
 
 
 class QuizQuestion(BaseModel):

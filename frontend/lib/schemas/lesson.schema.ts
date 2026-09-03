@@ -14,6 +14,10 @@ export type LessonResource = {
 export type LessonCitation = {
   label: string;
   note: string;
+  document_id?: string | null;
+  filename?: string | null;
+  page_number?: number | null;
+  chunk_id?: string | null;
 };
 
 export type QuizQuestion = {
