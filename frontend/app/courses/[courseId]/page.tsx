@@ -1,6 +1,6 @@
-import { CourseWorkspace, type CourseWorkspaceCourse } from '@/components/dashboard/course-workspace';
+import { CourseWorkspace } from '@/components/dashboard/course-workspace';
 import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { getCourseWorkspaceData } from '@/lib/courses';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 
@@ -16,39 +16,20 @@ export default async function CoursePage({
 
   const { courseId } = await params;
   const { chapter } = await searchParams;
-  const course = await prisma.course.findFirst({
-    where: { id: courseId, userId: session.user.id },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      goal: true,
-      courseDepth: true,
-      finalProject: true,
-      status: true,
-      progress: true,
-      experienceLevel: true,
-      chapters: {
-        orderBy: { order: 'asc' },
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          content: true,
-          quizJson: true,
-          citationsJson: true,
-          resourcesJson: true,
-          projectTask: true,
-          status: true,
-          estimatedDuration: true,
-          learningOutcomes: true,
-          order: true,
-        },
-      },
-    },
-  });
+  const workspace = await getCourseWorkspaceData(
+    session.user.id,
+    courseId,
+    chapter,
+  );
 
-  if (!course) notFound();
+  if (!workspace) {
+    notFound();
+  }
 
-  return <CourseWorkspace course={course as CourseWorkspaceCourse} initialChapterId={chapter} />;
+  return (
+    <CourseWorkspace
+      course={workspace.course}
+      initialChapter={workspace.initialChapter}
+    />
+  );
 }

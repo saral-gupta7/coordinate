@@ -1,7 +1,6 @@
 import { AppToaster } from '@/components/app-toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
-import QueryProviderClient from '@/providers/query-client-provider';
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Geist, Geist_Mono } from 'next/font/google';
 
@@ -63,7 +62,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <QueryProviderClient>{children}</QueryProviderClient>
+          {children}
           <AppToaster />
         </ThemeProvider>
       </body>

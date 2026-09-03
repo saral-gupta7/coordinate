@@ -1,6 +1,6 @@
-import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { NextRequest, NextResponse } from 'next/server';
+import { getDashboardCourses } from '@/lib/courses';
 
 export async function GET(request: NextRequest) {
   const session = await getSession(request);
@@ -8,25 +8,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    const courses = await prisma.course.findMany({
-      where: { userId: session.user.id },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        progress: true,
-        status: true,
-        courseDepth: true,
-        experienceLevel: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            chapters: true,
-          },
-        },
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+    const courses = await getDashboardCourses(session.user.id);
 
     return NextResponse.json({ courses });
   } catch {

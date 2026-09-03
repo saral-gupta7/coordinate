@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,12 +10,12 @@
 
 :root {
   color-scheme: light;
-  --canvas: #f4f2ed;
-  --surface: #fffefa;
-  --surface-soft: #eeece6;
-  --ink: #17172a;
-  --muted: #6f6d78;
-  --line: #ddd9d2;
+  --canvas: #f6f6f8;
+  --surface: #ffffff;
+  --surface-soft: #f0f0f3;
+  --ink: #18181b;
+  --muted: #71717a;
+  --line: #e2e2e7;
   --accent: #7568ff;
   --accent-strong: #5e50e8;
   --accent-soft: #e7e3ff;
@@ -25,8 +25,8 @@
   --danger-soft: #fff0f1;
   --success: #26745d;
   --success-soft: #e1f2eb;
-  --rail: #ebe8f5;
-  --shadow: 0 26px 80px rgba(49, 43, 78, 0.11);
+  --rail: #fbfbfc;
+  --shadow: 0 24px 70px rgba(28, 25, 45, 0.1);
 }
 
 .dark {
@@ -83,13 +83,169 @@ textarea {
 
 .hairline-grid {
   background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--line) 45%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--line) 45%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 80px 80px;
 }
 
 .panel-shadow {
   box-shadow: var(--shadow);
+}
+
+.prompt-surface {
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent),
+    0 18px 55px color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.lesson-content {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.85;
+}
+
+.lesson-content > :first-child {
+  margin-top: 0;
+}
+
+.lesson-content > :last-child {
+  margin-bottom: 0;
+}
+
+.lesson-content h1,
+.lesson-content h2,
+.lesson-content h3,
+.lesson-content h4 {
+  color: var(--ink);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.lesson-content h1,
+.lesson-content h2 {
+  margin: 2.75rem 0 1rem;
+  font-size: clamp(1.65rem, 4vw, 2.25rem);
+}
+
+.lesson-content h3 {
+  margin: 2.25rem 0 0.75rem;
+  font-size: 1.4rem;
+}
+
+.lesson-content h4 {
+  margin: 1.75rem 0 0.65rem;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+}
+
+.lesson-content p,
+.lesson-content ul,
+.lesson-content ol,
+.lesson-content blockquote,
+.lesson-content pre,
+.lesson-content table {
+  margin: 1.1rem 0;
+}
+
+.lesson-content ul,
+.lesson-content ol {
+  padding-left: 1.4rem;
+}
+
+.lesson-content ul {
+  list-style: disc;
+}
+
+.lesson-content ol {
+  list-style: decimal;
+}
+
+.lesson-content li {
+  padding-left: 0.35rem;
+}
+
+.lesson-content li + li {
+  margin-top: 0.45rem;
+}
+
+.lesson-content strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.lesson-content a {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.lesson-content blockquote {
+  border-left: 3px solid var(--accent);
+  color: var(--ink);
+  padding: 0.25rem 0 0.25rem 1.25rem;
+}
+
+.lesson-content code {
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.38em;
+}
+
+.lesson-content pre {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--surface-soft);
+  padding: 1rem 1.1rem;
+}
+
+.lesson-content pre code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.lesson-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.lesson-content th,
+.lesson-content td {
+  border: 1px solid var(--line);
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.lesson-content th {
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.lesson-content hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--line);
 }
 
 @media (max-width: 639px) {

@@ -5,7 +5,6 @@ import {
   generateCoursePlanAction,
   reviseCoursePlanAction,
 } from '@/lib/actions/create.action';
-import { authClient } from '@/lib/auth-client';
 import type {
   CourseBlueprint,
   CoursePlanResponse,
@@ -48,9 +47,13 @@ type Draft = CoursePlanResponse & { course: CourseBlueprint };
 type PlannerError = { title: string; detail?: string };
 type PendingAction = 'generating' | 'revising' | 'saving' | null;
 
-function useCourses() {
+function useCourses(initialCourses: DashboardCourse[]) {
   return useQuery<CoursesResponse>({
     queryKey: ['courses'],
+    initialData: {
+      courses: initialCourses,
+    },
+    staleTime: 60_000,
     queryFn: async () => {
       const response = await fetch('/api/courses');
       if (!response.ok) throw new Error('Could not load your courses.');
@@ -67,7 +70,7 @@ const coverSchemes = [
   ['#d3e0f4', '#101d33'],
 ] as const;
 
-const promptStarters = [
+const promptSuggestions = [
   {
     label: 'Build a practical skill',
     prompt:
@@ -82,6 +85,16 @@ const promptStarters = [
     label: 'Understand a subject',
     prompt:
       'Teach me the fundamentals of personal finance as a beginner. I want to understand budgeting, emergency funds, investing, and common risks.',
+  },
+  {
+    label: 'Prepare for an exam',
+    prompt:
+      'Help me prepare for a computer networks exam in two weeks. I know the basics but need a structured revision plan with practice questions.',
+  },
+  {
+    label: 'Build a project',
+    prompt:
+      'Guide me through building and deploying a production-ready REST API with Node.js and PostgreSQL. I know JavaScript but need backend practice.',
   },
 ] as const;
 
@@ -115,10 +128,17 @@ function CourseCover({ course }: { course: DashboardCourse }) {
   );
 }
 
-export function DashboardWorkspace() {
-  const { data: session } = authClient.useSession();
+type DashboardProps = {
+  initialCourses: DashboardCourse[];
+  userName: string;
+};
+
+export function DashboardWorkspace({
+  initialCourses,
+  userName,
+}: DashboardProps) {
   const queryClient = useQueryClient();
-  const { data, error, isPending } = useCourses();
+  const { data, error, isPending } = useCourses(initialCourses);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [requestPrompt, setRequestPrompt] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -228,168 +248,114 @@ export function DashboardWorkspace() {
   }
 
   const courses = data?.courses ?? [];
-  const firstName = session?.user.name?.split(' ')[0] ?? 'Learner';
+  const firstName = userName.split(' ')[0] || 'Learner';
   const isBusy = pendingAction !== null;
 
   return (
-    <div className="dashboard-glow mx-auto min-h-svh max-w-[1540px] px-4 py-5 sm:px-8 sm:py-6 lg:px-12 lg:py-9">
-      <header className="flex items-center justify-between">
-        <div className="max-w-[70vw] truncate rounded-full border bg-[var(--surface)] px-4 py-2 text-sm font-medium shadow-sm sm:max-w-none">
-          {session?.user.name ?? 'Your workspace'}
-        </div>
-        <span className="hidden text-xs uppercase tracking-[0.18em] text-[var(--muted)] sm:block">
-          Adaptive course studio
-        </span>
+    <div className="mx-auto min-h-svh max-w-[1540px] px-4 py-5 sm:px-8 sm:py-6 lg:px-12 lg:py-9">
+      <header className="flex items-center">
+        <p className="max-w-[75vw] truncate text-sm font-medium text-[var(--muted)] sm:max-w-none">
+          {userName || 'Your workspace'}
+        </p>
       </header>
 
-      <section className="scroll-mt-6 py-10 sm:py-16 lg:py-20" id="course-composer">
-        <div className="mb-7 max-w-3xl sm:mb-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent-strong)]">
-            New learning path
-          </p>
-          <h1 className="mt-4 text-[clamp(2.35rem,10vw,5.4rem)] font-semibold leading-[0.94] tracking-[-0.065em] sm:leading-[0.9]">
-            What do you want to learn,
-            <span className="editorial-serif block font-medium text-[var(--accent-strong)] sm:ml-3 sm:inline">
-              {firstName}?
-            </span>
+      <section
+        className="scroll-mt-6 py-12 sm:py-16 lg:py-20"
+        id="course-composer"
+      >
+        <div className="mx-auto max-w-4xl">
+          <h1 className="text-balance text-center text-[clamp(2.4rem,8vw,4.75rem)] font-semibold leading-[0.96] tracking-[-0.06em]">
+            What do you want to learn, {firstName}?
           </h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-[var(--muted)]">
-            Give us the destination, your starting point, and the outcome you
-            care about. You stay in control of the curriculum before it is saved.
-          </p>
-        </div>
+          <form
+            className="prompt-surface mt-9 overflow-hidden rounded-[26px] border bg-[var(--surface)] sm:mt-11 sm:rounded-[30px]"
+            onSubmit={handleSubmit(submit)}
+          >
+            <label
+              className="flex items-center gap-2 border-b px-5 py-4 text-xs font-semibold text-[var(--muted)] sm:px-6"
+              htmlFor="course-prompt"
+            >
+              <Sparkles className="size-4 text-[var(--accent-strong)]" />
+              Create a course
+            </label>
+            <textarea
+              {...register('prompt', {
+                validate: (value) => {
+                  const parsed =
+                    createCourseSchema.shape.prompt.safeParse(value);
+                  return parsed.success || parsed.error.issues[0]?.message;
+                },
+              })}
+              aria-describedby="course-request-error course-planner-error"
+              aria-invalid={Boolean(errors.prompt || plannerError)}
+              className="min-h-48 w-full resize-none border-0 bg-transparent px-5 py-5 text-base leading-7 placeholder:text-[color-mix(in_srgb,var(--muted)_78%,transparent)] focus:outline-none sm:min-h-56 sm:px-6 sm:py-6 sm:text-lg sm:leading-8"
+              id="course-prompt"
+              placeholder="Describe what you want to learn. Include what you already know, your goal, and how deeply you want to study it…"
+            />
 
-        <div className="panel-shadow overflow-hidden rounded-[26px] border bg-[var(--surface)] sm:rounded-[34px]">
-          <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
-            <div className="order-2 flex flex-col p-5 sm:p-9 lg:order-1 lg:min-h-[610px] lg:p-12">
-              <div className="flex items-center justify-between gap-4">
-                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-strong)]">
-                  <Sparkles className="size-4" />
-                  Start with a clear brief
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
-                  01 / 03
-                </span>
-              </div>
-
-              <div className="mt-8 sm:mt-12">
-                <h2 className="max-w-md text-2xl font-semibold leading-tight tracking-[-0.045em] sm:text-4xl">
-                  A useful course starts with useful context.
-                </h2>
-                <p className="mt-4 max-w-md text-sm leading-7 text-[var(--muted)]">
-                  Include what you already know, where you want to get, and how
-                  you prefer to practice. A few specific sentences are enough.
-                </p>
-              </div>
-
-              <div className="mt-7 sm:mt-9">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-                  Try a starting point
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {promptStarters.map((starter) => (
-                    <button
-                      className="focus-ring rounded-full border bg-[var(--surface-soft)] px-3.5 py-2 text-xs font-medium text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--ink)]"
-                      key={starter.label}
-                      onClick={() => {
-                        setPlannerError(null);
-                        setValue('prompt', starter.prompt, {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                      type="button"
-                    >
-                      {starter.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-9 grid grid-cols-3 gap-3 border-t pt-6 lg:mt-auto lg:pt-7">
-                {[
-                  ['01', 'Describe'],
-                  ['02', 'Review'],
-                  ['03', 'Approve'],
-                ].map(([number, label]) => (
-                  <div key={number}>
-                    <span className="font-mono text-[10px] text-[var(--accent-strong)]">{number}</span>
-                    <p className="mt-1 text-xs font-medium text-[var(--muted)]">{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="order-1 bg-[var(--surface-soft)] p-3 sm:p-6 lg:order-2 lg:border-l lg:p-8">
-              <form
-                className="flex min-h-[440px] flex-col rounded-[21px] border bg-[var(--surface)] p-4 sm:min-h-[520px] sm:rounded-[26px] sm:p-6"
-                onSubmit={handleSubmit(submit)}
+            {plannerError && (
+              <div
+                aria-live="assertive"
+                className="mx-4 mb-4 flex gap-3 rounded-2xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--line))] bg-[var(--danger-soft)] p-4 text-left sm:mx-5"
+                id="course-planner-error"
+                role="alert"
               >
-                <div className="flex items-center justify-between gap-4 border-b pb-4">
-                  <div>
-                    <p className="text-sm font-semibold">Course brief</p>
-                    <p className="mt-1 text-xs text-[var(--muted)]">Write naturally. Specific beats formal.</p>
-                  </div>
-                  <span className="grid size-10 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-strong)]">
-                    <Sparkles className="size-4" />
-                  </span>
+                <AlertCircle className="mt-0.5 size-5 shrink-0 text-[var(--danger)]" />
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-semibold text-[var(--danger)]">
+                    {plannerError.title}
+                  </p>
+                  <p className="mt-1 break-words text-xs leading-5 text-[var(--muted)]">
+                    {plannerError.detail ??
+                      'Name a subject or skill and tell us what you want to be able to do.'}
+                  </p>
                 </div>
+              </div>
+            )}
 
-                <textarea
-                  {...register('prompt', {
-                    validate: (value) => {
-                      const parsed = createCourseSchema.shape.prompt.safeParse(value);
-                      return parsed.success || parsed.error.issues[0]?.message;
-                    },
-                  })}
-                  aria-describedby="course-request-error course-planner-error"
-                  aria-invalid={Boolean(errors.prompt || plannerError)}
-                  aria-label="Course request"
-                  className="min-h-56 flex-1 resize-none border-0 bg-transparent px-1 py-5 text-base leading-7 placeholder:text-[var(--muted)] focus:outline-none sm:min-h-72 sm:py-6 sm:text-lg sm:leading-8"
-                  placeholder="For example: I want a practical SQL course for analytics. I know spreadsheets but have never used a database. Help me build confidence writing queries for real datasets."
-                />
-
-                {plannerError && (
-                  <div
-                    aria-live="assertive"
-                    className="mb-4 flex gap-3 rounded-2xl border border-[color-mix(in_srgb,var(--danger)_35%,var(--line))] bg-[var(--danger-soft)] p-4 text-left"
-                    id="course-planner-error"
-                    role="alert"
-                  >
-                    <AlertCircle className="mt-0.5 size-5 shrink-0 text-[var(--danger)]" />
-                    <div className="min-w-0">
-                      <p className="break-words text-sm font-semibold text-[var(--danger)]">
-                        {plannerError.title}
-                      </p>
-                      <p className="mt-1 break-words text-xs leading-5 text-[var(--muted)]">
-                        {plannerError.detail ??
-                          'Name a subject or skill and tell us what you want to be able to do.'}
-                      </p>
-                    </div>
-                  </div>
+            <div className="flex min-h-17 items-center justify-between gap-4 border-t px-4 py-3 sm:px-5">
+              <p
+                className="min-w-0 text-xs leading-5 text-[var(--danger)]"
+                id="course-request-error"
+              >
+                {errors.prompt?.message}
+              </p>
+              <button
+                aria-label="Create curriculum"
+                className="focus-ring inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-[var(--ink)] text-[var(--surface)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60"
+                disabled={isBusy}
+                title="Create curriculum"
+                type="submit"
+              >
+                {pendingAction === 'generating' ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <ArrowRight className="size-4" />
                 )}
-
-                <div className="border-t pt-4">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="max-w-md text-xs leading-5 text-[var(--danger)]" id="course-request-error">
-                      {errors.prompt?.message}
-                    </p>
-                    <button
-                      className="focus-ring inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-ink)] shadow-[0_10px_30px_var(--accent-shadow)] transition hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:hover:-translate-y-0.5"
-                      disabled={isBusy}
-                      type="submit"
-                    >
-                      {pendingAction === 'generating' ? (
-                        <LoaderCircle className="size-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="size-4" />
-                      )}
-                      {pendingAction === 'generating' ? 'Building draft…' : 'Create curriculum'}
-                    </button>
-                  </div>
-                </div>
-              </form>
+              </button>
             </div>
+          </form>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-2.5 sm:mt-7">
+            {promptSuggestions.map((suggestion) => (
+              <button
+                className="focus-ring rounded-full border bg-[var(--surface)] px-4 py-2.5 text-xs font-medium text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--ink)]"
+                key={suggestion.label}
+                onClick={() => {
+                  setPlannerError(null);
+                  setValue('prompt', suggestion.prompt, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  document
+                    .querySelector<HTMLTextAreaElement>('#course-prompt')
+                    ?.focus();
+                }}
+                type="button"
+              >
+                {suggestion.label}
+              </button>
+            ))}
           </div>
         </div>
       </section>
@@ -596,7 +562,10 @@ function CurriculumReview({
           </div>
 
           <div className="grid gap-px border-t bg-[var(--line)] md:grid-cols-2">
-            <PlanList title="Learning objectives" items={draft.learning_objectives} />
+            <PlanList
+              title="Learning objectives"
+              items={draft.learning_objectives}
+            />
             <PlanList title="Assessment plan" items={draft.assessment_plan} />
             <PlanList
               emptyLabel="No prerequisites"
@@ -637,7 +606,9 @@ function CurriculumReview({
             ) : (
               <Check className="size-4" />
             )}
-            {pendingAction === 'saving' ? 'Creating course…' : 'Use this curriculum'}
+            {pendingAction === 'saving'
+              ? 'Creating course…'
+              : 'Use this curriculum'}
           </button>
 
           <div className="my-6 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -646,7 +617,10 @@ function CurriculumReview({
             <span className="h-px flex-1 bg-[var(--line)]" />
           </div>
 
-          <label className="text-xs font-semibold" htmlFor="curriculum-feedback">
+          <label
+            className="text-xs font-semibold"
+            htmlFor="curriculum-feedback"
+          >
             Your revision notes
           </label>
           <textarea
@@ -677,7 +651,9 @@ function CurriculumReview({
             ) : (
               <Sparkles className="size-4" />
             )}
-            {pendingAction === 'revising' ? 'Reworking curriculum…' : 'Apply my changes'}
+            {pendingAction === 'revising'
+              ? 'Reworking curriculum…'
+              : 'Apply my changes'}
           </button>
         </aside>
       </div>
@@ -710,7 +686,10 @@ function PlanList({
       {items.length ? (
         <ul className="mt-4 space-y-3">
           {items.map((item) => (
-            <li className="flex gap-2 text-sm leading-6 text-[var(--muted)]" key={item}>
+            <li
+              className="flex gap-2 text-sm leading-6 text-[var(--muted)]"
+              key={item}
+            >
               <ArrowRight className="mt-1 size-3.5 shrink-0 text-[var(--accent-strong)]" />
               {item}
             </li>

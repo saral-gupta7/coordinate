@@ -3,8 +3,7 @@
 import { BrandMark } from '@/components/brand-mark';
 import SignOut from '@/components/sign-out';
 import { ModeToggle } from '@/components/theme-toggle';
-import { authClient } from '@/lib/auth-client';
-import { BookOpen, Home, Library, UserRound } from 'lucide-react';
+import { LayoutDashboard, Library, Plus, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -21,16 +20,16 @@ function NavButton({
   onClick?: () => void;
   children: React.ReactNode;
 }) {
-  const className = `focus-ring group relative flex size-11 items-center justify-center rounded-xl transition ${
+  const className = `focus-ring group relative flex size-10 items-center justify-center rounded-xl transition ${
     active
-      ? 'bg-[var(--surface)] text-[var(--ink)] shadow-sm'
-      : 'text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]'
+      ? 'bg-[var(--accent-soft)] text-[var(--accent-strong)]'
+      : 'text-[var(--muted)] hover:bg-[var(--surface-soft)] hover:text-[var(--ink)]'
   }`;
 
   const content = (
     <>
       {children}
-      <span className="pointer-events-none absolute left-14 z-50 hidden whitespace-nowrap rounded-md bg-[var(--ink)] px-2.5 py-1.5 text-xs text-[var(--surface)] opacity-0 shadow-lg transition group-hover:opacity-100 lg:block">
+      <span className="pointer-events-none absolute left-12 z-50 hidden whitespace-nowrap rounded-lg bg-[var(--ink)] px-2.5 py-1.5 text-xs font-medium text-[var(--surface)] opacity-0 shadow-lg transition group-hover:opacity-100 lg:block">
         {label}
       </span>
     </>
@@ -45,16 +44,26 @@ function NavButton({
   }
 
   return (
-    <button aria-label={label} className={className} onClick={onClick} type="button">
+    <button
+      aria-label={label}
+      className={className}
+      onClick={onClick}
+      type="button"
+    >
       {content}
     </button>
   );
 }
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: { name: string; image?: string | null };
+}) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session } = authClient.useSession();
 
   function openCourses() {
     if (pathname !== '/dashboard') {
@@ -65,34 +74,56 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     document.querySelector('#courses')?.scrollIntoView({ behavior: 'smooth' });
   }
 
+  function openComposer() {
+    if (pathname !== '/dashboard') {
+      router.push('/dashboard#course-composer');
+      return;
+    }
+
+    document
+      .querySelector('#course-composer')
+      ?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
     <main className="min-h-svh bg-[var(--canvas)] text-[var(--ink)]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[82px] border-r bg-[var(--rail)] lg:flex lg:flex-col lg:items-center">
-        <Link aria-label="Coordinate home" className="mt-5" href="/">
-          <BrandMark className="size-12" />
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[68px] border-r bg-[var(--rail)] lg:flex lg:flex-col lg:items-center">
+        <Link
+          aria-label="Coordinate dashboard"
+          className="focus-ring mt-5 rounded-xl"
+          href="/dashboard"
+        >
+          <BrandMark className="size-8 rounded-[10px]" />
         </Link>
 
-        <nav className="mt-14 flex flex-1 flex-col items-center gap-3" aria-label="Workspace">
-          <NavButton active={pathname === '/dashboard'} href="/dashboard" label="Dashboard">
-            <Home className="size-[19px]" />
+        <nav
+          aria-label="Workspace"
+          className="mt-12 flex flex-1 flex-col items-center gap-2"
+        >
+          <NavButton
+            active={pathname === '/dashboard'}
+            href="/dashboard"
+            label="Dashboard"
+          >
+            <LayoutDashboard className="size-[18px]" />
+          </NavButton>
+          <NavButton label="New course" onClick={openComposer}>
+            <Plus className="size-[18px]" />
           </NavButton>
           <NavButton label="Courses" onClick={openCourses}>
-            <Library className="size-[19px]" />
-          </NavButton>
-          <NavButton active={pathname.startsWith('/courses/')} href="/dashboard#courses" label="Current course">
-            <BookOpen className="size-[19px]" />
+            <Library className="size-[18px]" />
           </NavButton>
         </nav>
 
-        <div className="mb-5 flex flex-col items-center gap-3">
+        <div className="mb-4 flex flex-col items-center gap-2.5 border-t pt-4">
           <ModeToggle />
           <div
-            className="flex size-10 items-center justify-center overflow-hidden rounded-full border bg-[var(--surface)] text-xs font-semibold"
-            title={session?.user.name ?? 'Learner'}
+            className="flex size-9 items-center justify-center overflow-hidden rounded-full border bg-[var(--surface)] text-xs font-semibold"
+            title={user.name || 'Learner'}
           >
-            {session?.user.image ? (
+            {user.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img alt="" className="size-full object-cover" src={session.user.image} />
+              <img alt="" className="size-full object-cover" src={user.image} />
             ) : (
               <UserRound className="size-4" />
             )}
@@ -101,14 +132,21 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="min-h-svh pb-24 lg:pb-0 lg:pl-[82px]">{children}</div>
+      <div className="min-h-svh pb-24 lg:pb-0 lg:pl-[68px]">{children}</div>
 
-      <nav className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 flex h-16 items-center justify-around rounded-2xl border bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] px-3 shadow-2xl backdrop-blur-xl lg:hidden">
-        <NavButton active={pathname === '/dashboard'} href="/dashboard" label="Dashboard">
-          <Home className="size-[19px]" />
+      <nav className="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 mx-auto flex h-15 max-w-sm items-center justify-around rounded-[20px] border bg-[color-mix(in_srgb,var(--surface)_94%,transparent)] px-3 shadow-[0_16px_50px_rgba(0,0,0,0.16)] backdrop-blur-xl lg:hidden">
+        <NavButton
+          active={pathname === '/dashboard'}
+          href="/dashboard"
+          label="Dashboard"
+        >
+          <LayoutDashboard className="size-[18px]" />
+        </NavButton>
+        <NavButton label="New course" onClick={openComposer}>
+          <Plus className="size-[18px]" />
         </NavButton>
         <NavButton label="Courses" onClick={openCourses}>
-          <Library className="size-[19px]" />
+          <Library className="size-[18px]" />
         </NavButton>
         <ModeToggle />
         <SignOut />
